@@ -1,0 +1,602 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="/static/favicon.png?v=3">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Dashboard | Smart Campus Placement Portal</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+
+        :root {
+            --bg: #090A0B;
+            --sidebar: #171819;
+            --surface: #111213;
+            --surface-raised: #171819;
+            --line: #373839;
+            --line-soft: rgba(210, 210, 210, .13);
+            --text: #F4F1EC;
+            --muted: #B8B4AE;
+            --quiet: #85817B;
+            --accent: #D5B58F;
+            --accent-strong: #E2C29B;
+            --accent-soft: rgba(213, 181, 143, .12);
+            --success: #8FAE94;
+            --danger: #D9877E;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            color: var(--text);
+            background: var(--bg);
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .layout { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 255px;
+            height: 100vh;
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+            flex: 0 0 255px;
+            display: flex;
+            flex-direction: column;
+            padding: 25px 18px 20px;
+            overflow-y: auto;
+            background: linear-gradient(180deg, #1B1C1D 0%, #141516 100%);
+            border-right: 1px solid rgba(255,255,255,.10);
+        }
+
+        .brand {
+            padding: 8px 12px 27px;
+            border-bottom: 1px solid var(--line);
+        }
+        .brand img {
+            display: block;
+            width: 178px;
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+            object-position: left center;
+        }
+        .brand p {
+            margin-top: 10px;
+            color: #A5A19B;
+            font-size: 9px;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+        }
+
+        .section-label {
+            padding: 27px 12px 11px;
+            color: #A29D96;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1.8px;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 3px 0;
+            padding: 12px 13px;
+            border: 1px solid transparent;
+            border-radius: 7px;
+            color: #D0CCC6;
+            text-decoration: none;
+            font-size: 12px;
+            transition: background .18s ease, border-color .18s ease, color .18s ease;
+        }
+        .nav-link:hover {
+            background: rgba(213, 181, 143, .08);
+            color: #fff;
+        }
+        .nav-link.active {
+            color: #191715;
+            background: linear-gradient(110deg, #D7B994, #C7A47E);
+            border-color: rgba(255,255,255,.16);
+        }
+        .nav-icon { width: 20px; text-align: center; font-size: 15px; }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 18px;
+            border-top: 1px solid var(--line);
+        }
+        .logout-button {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid rgba(217, 135, 126, .28);
+            border-radius: 7px;
+            background: transparent;
+            color: var(--danger);
+            cursor: pointer;
+            font: inherit;
+            font-size: 11px;
+            text-align: left;
+            transition: .18s ease;
+        }
+        .logout-button:hover {
+            background: rgba(217, 135, 126, .09);
+            border-color: rgba(217, 135, 126, .5);
+        }
+
+        .main { flex: 1; min-width: 0; }
+        .topbar {
+            min-height: 76px;
+            padding: 0 35px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            background: #101112;
+            border-bottom: 1px solid var(--line);
+        }
+        .topbar h2 {
+            color: #F1EEE9;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: .1px;
+        }
+        .profile { display: flex; align-items: center; gap: 12px; }
+        .avatar {
+            width: 38px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(213,181,143,.35);
+            border-radius: 50%;
+            color: #1B1916;
+            background: var(--accent);
+            font-size: 13px; font-weight: 700;
+        }
+        .profile-info p { color: var(--text); font-size: 11px; font-weight: 600; }
+        .profile-info span { color: var(--quiet); font-size: 10px; }
+
+        .content { max-width: 1600px; margin: 0 auto; padding: 34px 35px 20px; }
+        .welcome { position: relative; margin-bottom: 25px; padding: 5px 0 19px; }
+        .welcome::before {
+            content: "SUPER ADMINISTRATION";
+            display: block;
+            margin-bottom: 11px;
+            color: #C5B7A5;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 3px;
+        }
+        .welcome h1 {
+            margin-bottom: 7px;
+            color: #F4F0EA;
+            font-family: "Cormorant Garamond", Georgia, serif;
+            font-size: clamp(34px, 3vw, 46px);
+            font-weight: 500;
+            letter-spacing: -.7px;
+            line-height: 1.05;
+        }
+        .welcome p { color: #AAA59E; font-size: 12px; line-height: 1.7; }
+        .welcome::after {
+            content: "";
+            display: block;
+            width: 30px;
+            height: 2px;
+            margin-top: 19px;
+            background: var(--accent);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0;
+            margin-bottom: 22px;
+            padding: 19px 10px;
+            background: linear-gradient(110deg, #141516, #101112);
+            border: 1px solid var(--line);
+            border-radius: 9px;
+        }
+        .stat-card {
+            min-width: 0;
+            padding: 7px 22px;
+            background: transparent;
+            border: 0;
+            border-right: 1px solid #55514B;
+            border-radius: 0;
+            transition: background .18s ease;
+        }
+        .stat-card:last-child { border-right: 0; }
+        .stat-card:hover { background: rgba(213,181,143,.035); }
+        .stat-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
+        .stat-icon {
+            width: 35px; height: 35px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(213,181,143,.2);
+            border-radius: 8px;
+            color: var(--accent-strong);
+            background: var(--accent-soft);
+            font-size: 16px;
+        }
+        .stat-label { color: #B9B3AB; font-size: 10px; }
+        .stat-number { margin-bottom: 4px; color: #F5F2ED; font-size: 28px; font-weight: 600; letter-spacing: -.7px; }
+        .stat-description { color: #928C84; font-size: 10px; line-height: 1.5; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(250px, 1fr);
+            gap: 18px;
+        }
+        .panel {
+            min-width: 0;
+            padding: 21px;
+            background: linear-gradient(145deg, #151617, #101112);
+            border: 1px solid var(--line);
+            border-radius: 9px;
+        }
+        .panel-header {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            margin-bottom: 17px; padding-bottom: 14px; border-bottom: 1px solid var(--line-soft);
+        }
+        .panel-header h3 {
+            color: #F0ECE6;
+            font-family: "Cormorant Garamond", Georgia, serif;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        .panel-header span { color: #99938B; font-size: 10px; }
+
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; min-width: 430px; border-collapse: collapse; }
+        th {
+            padding: 11px 9px; color: #A49D94; font-size: 9px; font-weight: 600;
+            letter-spacing: .8px; text-align: left; text-transform: uppercase;
+            border-bottom: 1px solid #45413C;
+        }
+        td {
+            padding: 13px 9px; color: #D1CCC5; font-size: 10px; line-height: 1.5;
+            border-bottom: 1px solid rgba(255,255,255,.10); vertical-align: top;
+        }
+        tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: rgba(213,181,143,.035); }
+        .empty-state { padding: 29px 10px; color: #938D85; font-size: 11px; text-align: center; }
+
+        .quick-item {
+            display: flex; align-items: center; gap: 12px; padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,.11);
+        }
+        .quick-item:last-child { border-bottom: none; }
+        .quick-icon {
+            width: 37px; height: 37px; flex: 0 0 37px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(213,181,143,.2);
+            border-radius: 8px; color: var(--accent-strong);
+            background: var(--accent-soft); font-size: 16px;
+        }
+        .quick-text strong { display: block; margin-bottom: 4px; color: #EAE5DE; font-size: 11px; font-weight: 600; }
+        .quick-text span { color: #99928A; font-size: 10px; line-height: 1.5; }
+        .quick-text a { color: var(--accent-strong); text-decoration: none; }
+        .quick-text a:hover { color: #F0D7B8; }
+
+        .footer { padding: 22px 30px; color: #77716A; font-size: 9px; line-height: 1.8; text-align: center; }
+
+        @media (max-width: 1050px) {
+            .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .stat-card { padding: 7px 14px; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 700px) {
+            .layout { flex-direction: column; }
+            .sidebar {
+                width: 100%; height: auto; min-height: 0; position: relative;
+                flex-basis: auto; padding: 14px; overflow: visible;
+            }
+            .brand { padding: 5px 8px 15px; }
+            .brand img { width: 150px; }
+            .section-label { padding: 15px 8px 8px; }
+            .sidebar-bottom { margin-top: 14px; }
+            .topbar { min-height: 68px; padding: 12px 16px; }
+            .topbar h2 { font-size: 13px; }
+            .profile { gap: 8px; }
+            .profile-info p { max-width: 150px; overflow-wrap: anywhere; }
+            .content { padding: 25px 16px 12px; }
+            .welcome h1 { font-size: 34px; }
+            .stats-grid { grid-template-columns: 1fr; padding: 8px 12px; }
+            .stat-card { padding: 13px 8px; border-right: 0; border-bottom: 1px solid #55514B; }
+            .stat-card:last-child { border-bottom: 0; }
+            .panel { padding: 16px; }
+            .footer { padding: 18px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition-duration: .01ms !important; }
+        }
+
+
+/* Compact Super Admin top navigation */
+.layout { display:block; min-height:100vh; }
+.main { width:100%; min-width:0; }
+.topbar {
+ min-height:72px; padding:10px 32px; display:flex; align-items:center;
+ justify-content:space-between; gap:22px; flex-wrap:wrap;
+ background:rgba(20,21,22,.96); border-bottom:1px solid var(--line-soft, var(--line));
+}
+.top-brand { display:flex; align-items:center; flex:0 0 auto; }
+.top-brand img { display:block; width:155px; max-width:100%; height:auto; }
+.top-nav { display:flex; align-items:center; justify-content:center; gap:5px; flex:1 1 auto; }
+.top-nav a {
+ padding:9px 11px; border:1px solid transparent; border-radius:6px;
+ color:var(--muted); text-decoration:none; font-size:11px; white-space:nowrap; transition:.18s ease;
+}
+.top-nav a:hover { color:var(--text); background:rgba(213,181,143,.07); }
+.top-nav a.active { color:#171512; background:linear-gradient(135deg,#E1C5A2,#C9A982); }
+.top-actions { display:flex; align-items:center; gap:12px; flex:0 0 auto; }
+.top-actions .profile { color:var(--muted); font-size:10px; white-space:nowrap; }
+.top-actions form { margin:0; }
+.top-logout {
+ padding:8px 11px; border:1px solid rgba(229,162,162,.3); border-radius:6px;
+ background:transparent; color:var(--red, #E9B0B0); font:inherit; font-size:10px; cursor:pointer;
+}
+.top-logout:hover { background:rgba(229,162,162,.08); }
+@media (max-width:900px) {
+ .topbar { padding:12px 18px; gap:10px; }
+ .top-brand img { width:135px; }
+ .top-nav { order:3; flex-basis:100%; justify-content:flex-start; overflow-x:auto; }
+ .top-actions { margin-left:auto; }
+}
+@media (max-width:520px) {
+ .topbar { padding:11px 13px; }
+ .top-brand img { width:118px; }
+ .top-nav { gap:2px; }
+ .top-nav a { padding:8px 9px; font-size:10px; }
+ .top-actions .profile { display:none; }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+
+    <!-- MAIN CONTENT -->
+
+    <main class="main">
+
+
+<header class="topbar">
+    <a class="top-brand" href="{{ url_for('admin.super_admin_dashboard') }}">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PLACEHUB">
+    </a>
+    <nav class="top-nav" aria-label="Super Admin navigation">
+        <a href="{{ url_for('admin.super_admin_dashboard') }}" class="NAV_OVERVIEW active">Overview</a>
+        <a href="{{ url_for('admin.admin_accounts') }}" class="NAV_ACCOUNTS">Admin Accounts</a>
+        <a href="{{ url_for('admin.audit_activity') }}" class="NAV_AUDIT">Audit Activity</a>
+        <a href="{{ url_for('admin.change_password') }}" class="NAV_SETTINGS">Account Settings</a>
+    </nav>
+    <div class="top-actions">
+        <span class="profile">{{ session.get("placehub_username", "Super Admin") }}</span>
+        <form method="POST" action="{{ url_for('admin.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="top-logout">Logout</button>
+        </form>
+    </div>
+</header>
+
+
+
+        <section class="content">
+
+            <div class="welcome">
+                <h1>Welcome, {{ account.name }}</h1>
+                <p>
+                    Manage placement management accounts and monitor
+                    administrative activity.
+                </p>
+            </div>
+
+
+            <!-- STATISTICS -->
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+                        <span class="stat-label">Active Admin Accounts</span>
+                        <div class="stat-icon">♙</div>
+                    </div>
+
+                    <div class="stat-number">{{ active_admins }}</div>
+
+                    <div class="stat-description">
+                        Currently enabled Admin accounts
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+                        <span class="stat-label">Inactive Admin Accounts</span>
+                        <div class="stat-icon">⊘</div>
+                    </div>
+
+                    <div class="stat-number">{{ inactive_admins }}</div>
+
+                    <div class="stat-description">
+                        Disabled Admin accounts
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+                        <span class="stat-label">Maximum Admin Capacity</span>
+                        <div class="stat-icon">▤</div>
+                    </div>
+
+                    <div class="stat-number">5</div>
+
+                    <div class="stat-description">
+                        Maximum simultaneously active Admin accounts
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- DASHBOARD PANELS -->
+
+            <div class="dashboard-grid">
+
+                <section class="panel" id="admin-overview">
+
+                    <div class="panel-header">
+                        <h3>Recent Administrative Activity</h3>
+                        <span>Latest 10 records</span>
+                    </div>
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Target</th>
+                                    <th>Details</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for log in recent_logs %}
+
+                                    <tr>
+                                        <td>{{ log.action }}</td>
+                                        <td>
+                                            {{ log.target_type }}
+                                            #{{ log.target_id }}
+                                        </td>
+                                        <td>{{ log.details or "—" }}</td>
+                                        <td><time class="local-created-time" data-utc="{{ log.created_at }}">{{ log.created_at }}</time></td>
+                                    </tr>
+
+                                {% else %}
+
+                                    <tr>
+                                        <td colspan="4" class="empty-state">
+                                            No administrative activity recorded yet.
+                                        </td>
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+
+                <section class="panel">
+
+                    <div class="panel-header">
+                        <h3>Quick Access</h3>
+                    </div>
+
+                    <div class="quick-item">
+
+                        <div class="quick-icon">♙</div>
+
+                        <div class="quick-text">
+                            <strong><a href="{{ url_for('admin.admin_accounts') }}">Admin Account Management</a></strong>
+                            <span>Create, edit and manage institutional Admin accounts.</span>
+                        </div>
+
+                    </div>
+
+                    <div class="quick-item">
+
+                        <div class="quick-icon">⚙</div>
+
+                        <div class="quick-text">
+                            <strong>
+                                <a href="{{ url_for('admin.change_password') }}">
+                                    Account Settings
+                                </a>
+                            </strong>
+                            <span>Change your Super Admin password.</span>
+                        </div>
+
+                    </div>
+
+                    <div class="quick-item">
+
+                        <div class="quick-icon">▤</div>
+
+                        <div class="quick-text">
+                            <strong><a href="{{ url_for('admin.audit_activity') }}">Audit Activity</a></strong>
+                            <span>Recent administrative actions are shown in the activity panel.</span>
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </section>
+
+
+        <footer class="footer">
+            Smart Campus Placement Portal
+            <br>
+            Super Admin Management Module
+        </footer>
+
+    </main>
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".local-created-time").forEach((element) => {
+        const raw = (element.dataset.utc || "").trim();
+        if (!raw) return;
+
+        // SQLite CURRENT_TIMESTAMP is UTC and is stored as "YYYY-MM-DD HH:MM:SS".
+        const isoUtc = raw.includes("T") ? raw : raw.replace(" ", "T") + "Z";
+        const date = new Date(isoUtc);
+        if (Number.isNaN(date.getTime())) return;
+
+        element.textContent = new Intl.DateTimeFormat("en-IN", {
+            timeZone: "Asia/Kolkata",
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true
+        }).format(date);
+        element.title = "Indian Standard Time (IST)";
+    });
+});
+</script>
+
+</body>
+</html>

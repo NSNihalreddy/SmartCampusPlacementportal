@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {{ "Super Admin" if selected_role == "SUPER_ADMIN" else "Admin" }} Login | PLACEHUB
+    </title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            color: #eaf0f8;
+            background:
+                radial-gradient(circle at top left, #243d60, transparent 45%),
+                #101722;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 430px;
+            padding: 38px;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 20px;
+            background: rgba(25, 36, 52, .95);
+            box-shadow: 0 20px 60px rgba(0,0,0,.35);
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .brand-icon {
+            width: 62px;
+            height: 62px;
+            margin: 0 auto 16px;
+            display: grid;
+            place-items: center;
+            border-radius: 18px;
+            background: #263d5b;
+            color: #8fc6ff;
+            font-size: 26px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 25px;
+        }
+
+        .subtitle {
+            color: #a9b7c9;
+            font-size: 14px;
+        }
+
+        .field {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 9px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #39495e;
+            border-radius: 10px;
+            outline: none;
+            color: white;
+            background: #111b29;
+            font-size: 15px;
+        }
+
+        input:focus {
+            border-color: #75b9ff;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 14px;
+            border: 0;
+            border-radius: 10px;
+            background: #a8c5df;
+            color: #101722;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .login-button:hover {
+            background: #c1d9ee;
+        }
+
+        .message {
+            padding: 11px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background: rgba(255,255,255,.08);
+            color: #dce8f5;
+            font-size: 13px;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 24px;
+            text-align: center;
+            color: #a9bfd8;
+            text-decoration: none;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-card">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            <i class="fa-solid {{ 'fa-shield-halved' if selected_role == 'SUPER_ADMIN' else 'fa-user-gear' }}"></i>
+        </div>
+
+        <h1>
+            {{ "Super Admin Login" if selected_role == "SUPER_ADMIN" else "Admin Login" }}
+        </h1>
+
+        <p class="subtitle">
+            PLACEHUB Management Portal
+        </p>
+
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="message">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST"
+          action="{{ url_for('admin.login', role=selected_role) }}">
+
+        <input type="hidden" name="role" value="{{ selected_role }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="field">
+            <label for="username">Username</label>
+            <input
+                type="text"
+                id="username"
+                name="username"
+                autocomplete="username"
+                required
+                autofocus
+            >
+        </div>
+
+        <div class="field">
+            <label for="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                autocomplete="current-password"
+                required
+            >
+        </div>
+
+        <button type="submit" class="login-button">
+            Sign In
+        </button>
+
+    </form>
+
+    <a href="{{ url_for('home') }}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i>
+        Back to Main Portal
+    </a>
+
+</div>
+
+</body>
+</html>

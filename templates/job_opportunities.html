@@ -1,0 +1,271 @@
+
+{% extends "layouts/base.html" %}
+
+{% block body_class %}student-dashboard-body student-job-page{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Keep the status pill in its own space when the sidebar changes width. */
+    .job-card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+    .job-card-header > div {
+        flex: 1 1 180px;
+        min-width: 0;
+    }
+    .job-card-header h2 {
+        overflow-wrap: anywhere;
+        margin-right: 0;
+    }
+    .job-card-header .job-status {
+        position: static;
+        flex: 0 0 auto;
+        margin-left: auto;
+        white-space: nowrap;
+    }
+    @media (max-width: 1100px) {
+        .job-card-header {
+            gap: 10px;
+        }
+        .job-card-header > div {
+            flex-basis: 100%;
+        }
+        .job-card-header .job-status {
+            margin-left: 0;
+        }
+    }
+    .sidebar-unread-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 19px;
+        height: 19px;
+        padding: 0 5px;
+        border-radius: 999px;
+        background: #ef4444;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1;
+        margin-left: auto;
+        box-shadow: 0 0 0 2px rgba(25, 20, 25, .85);
+    }
+    .student-sidebar-nav li { position: relative; }
+    .student-sidebar-nav li a { position: relative; }
+  .student-sidebar-nav .sidebar-unread-badge { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); }
+    .student-sidebar.is-collapsed .sidebar-unread-badge,
+    .student-sidebar.collapsed .sidebar-unread-badge {
+        position: absolute;
+        top: 3px;
+        right: 5px;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+
+<aside class="student-sidebar">
+    <button
+        class="student-sidebar-collapse-btn"
+        type="button"
+        data-sidebar-toggle="student"
+        aria-label="Collapse sidebar"
+        aria-expanded="true"
+        title="Collapse sidebar">
+        <i class="fa-solid fa-angles-left"></i>
+    </button>
+
+    <div class="sidebar-logo">
+        <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Smart Placement Portal">
+    </div>
+
+    <ul class="student-sidebar-nav">
+        <li class="{% if request.endpoint == 'student_dashboard' %}active{% endif %}">
+            <a href="{{ url_for('student_dashboard') }}">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li class="{% if request.endpoint == 'student_profile' %}active{% endif %}">
+            <a href="{{ url_for('student_profile') }}">
+                <i class="fa-solid fa-user"></i>
+                <span>My Profile</span>
+            </a>
+        </li>
+
+        <li class="{% if request.endpoint in ['job_opportunities', 'company_details'] %}active{% endif %}">
+            <a href="{{ url_for('job_opportunities') }}">
+                <i class="fa-solid fa-briefcase"></i>
+                <span>Job Opportunities</span>
+            </a>
+        </li>
+
+        <li class="{% if request.endpoint == 'student_applications' %}active{% endif %}">
+            <a href="{{ url_for('student_applications') }}">
+                <i class="fa-solid fa-file-lines"></i>
+                <span>My Applications</span>
+            </a>
+        </li>
+
+        <li class="{% if request.endpoint == 'student_resume' %}active{% endif %}">
+            <a href="{{ url_for('student_resume') }}">
+                <i class="fa-solid fa-file-arrow-up"></i>
+                <span>Resume</span>
+            </a>
+        </li>
+
+        <li class="{% if request.endpoint == 'student_notifications' %}active{% endif %}">
+            <a href="{{ url_for('student_notifications') }}">
+                <i class="fa-solid fa-bell"></i>
+                <span>Notifications</span>
+                {% if student_unread_notifications %}
+                    <span class="sidebar-unread-badge"
+                          aria-label="{{ student_unread_notifications }} unread notifications">
+                        {{ student_unread_notifications if student_unread_notifications < 100 else '99+' }}
+                    </span>
+                {% endif %}
+            </a>
+        </li>
+
+        <li class="student-sidebar-logout">
+            <a href="{{ url_for('logout') }}">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</aside>
+
+<main class="student-main job-main">
+
+    <div class="job-page">
+
+        <a href="{{ url_for('student_dashboard') }}"
+           class="back-dashboard-btn">
+            <i class="fa-solid fa-arrow-left"></i>
+            Back to Dashboard
+        </a>
+
+        <div class="job-header">
+            <h1>Job Opportunities</h1>
+            <p>Explore the latest campus placement opportunities.</p>
+        </div>
+
+        <div class="job-grid">
+
+            {% if companies %}
+
+                {% for company in companies %}
+
+                    <div class="job-card">
+
+                        <div class="job-card-header">
+                            <div>
+                                <h2>{{ company["company_name"] }}</h2>
+                                <p>{{ company["job_role"] }}</p>
+                            </div>
+
+                            <span class="job-status">Open</span>
+                        </div>
+
+                        <div class="job-info">
+
+                            <div>
+                                <span>
+                                    <i class="fa-solid fa-sack-dollar"></i>
+                                    Package
+                                </span>
+                                <strong>{{ company["package"] }} LPA</strong>
+                            </div>
+
+                            <div>
+                                <span>
+                                    <i class="fa-solid fa-location-dot"></i>
+                                    Location
+                                </span>
+                                <strong>{{ company["location"] }}</strong>
+                            </div>
+
+                            <div>
+                                <span>
+                                    <i class="fa-solid fa-graduation-cap"></i>
+                                    CGPA Required
+                                </span>
+                                <strong>{{ company["cgpa_required"] }}</strong>
+                            </div>
+
+                            <div>
+                                <span>
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                    Deadline
+                                </span>
+                                <strong>{{ company["application_deadline"] }}</strong>
+                            </div>
+
+                        </div>
+
+                        <div class="job-info">
+                            <div>
+                                <span>
+                                    <i class="fa-solid fa-graduation-cap"></i>
+                                    Eligible Passing-out Batches
+                                </span>
+                                <strong>
+                                    {% if company["eligible_batches"] %}
+                                        {{ company["eligible_batches_label"] }}
+                                    {% else %}
+                                        No batch restriction
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <div>
+                                <span>Batch Eligibility</span>
+                                {% if company["batch_restriction_configured"] and not company["batch_eligible"] %}
+                                    <strong class="batch-ineligible">Not Eligible</strong>
+                                {% else %}
+                                    <strong class="batch-eligible">Eligible</strong>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="job-skills">
+                            <span>Required Skills</span>
+                            <p>{{ company["skills_required"] }}</p>
+                        </div>
+
+                        <a
+                            href="{{ url_for('company_details', company_id=company['company_id']) }}"
+                            class="view-job-btn">
+                            View Details
+                        </a>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="no-jobs">
+                    <h2>No Job Opportunities</h2>
+                    <p>There are currently no active placement drives.</p>
+                </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+</main>
+
+<script src="{{ url_for('static', filename='js/sidebar.js') }}" defer></script>
+
+{% endblock %}

@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="/static/favicon.png?v=3">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Interview Rounds | Placement Portal</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/sidebar-enhancements.css') }}">
+
+    <style>
+        /* Selection page layout */
+        .faculty-main {
+            min-width: 0;
+        }
+
+        .selection-page {
+            width: 100%;
+            max-width: 1500px;
+            box-sizing: border-box;
+            padding: 10px 0 32px;
+            color: #f5f5f5;
+        }
+
+        .selection-heading {
+            margin-bottom: 22px;
+        }
+
+        .selection-heading h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+            line-height: 1.25;
+        }
+
+        .selection-heading p {
+            color: #bdc7d1;
+            line-height: 1.5;
+        }
+
+        .selection-stats {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .selection-stat,
+        .selection-panel,
+        .candidate-card {
+            background: rgba(27, 26, 26, .94) !important;
+            border: 1px solid rgba(255, 255, 255, .13);
+            border-radius: 16px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, .16);
+            box-sizing: border-box;
+        }
+
+        .selection-stat {
+            padding: 18px;
+            min-width: 0;
+        }
+
+        .selection-stat span {
+            display: block;
+            color: #bdc7d1;
+            margin-bottom: 9px;
+            line-height: 1.35;
+        }
+
+        .selection-stat strong {
+            font-size: 26px;
+            line-height: 1.2;
+        }
+
+        .selection-panel {
+            padding: 22px;
+            margin-bottom: 22px;
+            min-width: 0;
+        }
+
+        .panel-title {
+            font-size: 21px;
+            margin: 0 0 7px;
+        }
+
+        .panel-subtitle {
+            color: #bdc7d1;
+            margin: 0 0 18px;
+            line-height: 1.5;
+        }
+
+        .selection-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .selection-toolbar input,
+        .selection-toolbar select {
+            background: #292727;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 11px 12px;
+            min-width: 210px;
+        }
+
+        .candidate-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .candidate-card {
+            padding: 19px;
+            min-width: 0;
+            margin: 0;
+        }
+
+        .candidate-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .candidate-name {
+            font-size: 19px;
+            font-weight: 750;
+            margin-bottom: 5px;
+        }
+
+        .candidate-meta {
+            color: #bdc7d1;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .candidate-meta strong {
+            color: #f5f5f5;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 7px 11px;
+            border-radius: 18px;
+            font-size: 12px;
+            font-weight: 700;
+            background: #4c4125;
+            color: #f5d58a;
+            white-space: nowrap;
+        }
+
+        .status-badge.selected,
+        .round-status.passed {
+            background: #244a38;
+            color: #9de4b8;
+        }
+
+        .status-badge.rejected,
+        .round-status.failed {
+            background: #4b2929;
+            color: #ffaaaa;
+        }
+
+        .status-badge.progress {
+            background: #344555;
+            color: #c5d8eb;
+        }
+
+        .progress-track {
+            height: 7px;
+            border-radius: 8px;
+            background: #393737;
+            overflow: hidden;
+            margin: 12px 0 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #aec3d8;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            color: #bdc7d1;
+        }
+
+        .round-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .round-card {
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .035);
+            min-width: 0;
+        }
+
+        .round-card h4 {
+            margin: 0 0 9px;
+            font-size: 15px;
+        }
+
+        .round-status {
+            display: inline-block;
+            border-radius: 15px;
+            padding: 5px 9px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #4c4125;
+            color: #f5d58a;
+            margin-bottom: 10px;
+        }
+
+        .round-form {
+            display: grid;
+            gap: 9px;
+        }
+
+        .round-form select,
+        .round-form input {
+            width: 100%;
+            box-sizing: border-box;
+            background: #292727;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 7px;
+            padding: 9px;
+        }
+
+        .round-form input {
+            font-size: 13px;
+        }
+
+        .round-form button {
+            width: 100%;
+            padding: 9px;
+            border: 0;
+            border-radius: 7px;
+            background: #aec3d8;
+            color: #15202b;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .round-form button:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .round-note {
+            font-size: 12px;
+            color: #bdc7d1;
+            line-height: 1.45;
+            margin: 8px 0 0;
+        }
+
+        .selection-message {
+            padding: 12px 15px;
+            margin-bottom: 16px;
+            border-radius: 9px;
+            background: #293c31;
+            color: #c4f3d3;
+        }
+
+        .selection-message.error {
+            background: #4b2929;
+            color: #ffaaaa;
+        }
+
+        .empty-state {
+            padding: 28px;
+            text-align: center;
+            color: #bdc7d1;
+            border: 1px dashed rgba(255, 255, 255, .2);
+            border-radius: 12px;
+        }
+
+        @media (max-width: 1100px) {
+            .selection-stats {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 760px) {
+            .selection-page {
+                padding-top: 6px;
+            }
+
+            .selection-heading h1 {
+                font-size: 25px;
+            }
+
+            .selection-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .selection-stat {
+                padding: 14px;
+            }
+
+            .selection-panel {
+                padding: 14px;
+            }
+
+            .candidate-card {
+                padding: 14px;
+            }
+
+            .round-list {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .selection-toolbar input,
+            .selection-toolbar select {
+                width: 100%;
+                min-width: 0;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+
+<body class="faculty-dashboard-body">
+
+    <!-- FACULTY SIDEBAR -->
+    <aside class="faculty-sidebar" id="facultySidebar">
+
+        <!-- Logo and Collapse Button -->
+        <div class="faculty-sidebar-brand">
+            <img
+                src="{{ url_for('static', filename='images/logo.png') }}"
+                alt="Vel Tech Smart Placement Portal"
+            >
+
+            <button
+                class="sidebar-collapse-btn"
+                type="button"
+                data-sidebar-toggle="faculty"
+                aria-label="Collapse sidebar"
+                aria-expanded="true"
+                title="Collapse sidebar"
+            >
+                <i class="fa-solid fa-angles-left"></i>
+            </button>
+        </div>
+
+        <!-- Faculty Identity -->
+        <div class="faculty-identity">
+            <div class="faculty-avatar">
+                <i class="fa-solid fa-user-tie"></i>
+            </div>
+
+            <div class="faculty-identity-text">
+                <strong>
+                    {{ session.get('faculty_name', 'Faculty') }}
+                </strong>
+
+                <span>
+                    {{ session.get(
+                        'faculty_role',
+                        faculty_role if faculty_role is defined else 'Faculty'
+                    ) }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="faculty-nav" aria-label="Faculty navigation">
+
+            <!-- Dashboard -->
+            <a
+                href="{{ url_for('faculty_dashboard') }}"
+                class="faculty-nav-link {% if request.endpoint == 'faculty_dashboard' %}active{% endif %}"
+                title="Dashboard"
+            >
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <!-- Manage Group -->
+            <section class="sidebar-group {% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students', 'faculty_management'] %}is-open{% endif %}">
+
+                <button
+                    type="button"
+                    class="faculty-nav-link sidebar-group-toggle"
+                    aria-expanded="{% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students', 'faculty_management'] %}true{% else %}false{% endif %}"
+                    title="Manage"
+                >
+                    <i class="fa-solid fa-users-gear"></i>
+                    <span>Manage</span>
+                    <i class="fa-solid fa-chevron-down group-chevron"></i>
+                </button>
+
+                <div class="sidebar-submenu">
+
+                    <a
+                        href="{{ url_for('faculty_students') }}"
+                        class="faculty-nav-link {% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students'] %}active{% endif %}"
+                        title="Students"
+                    >
+                        <i class="fa-solid fa-users"></i>
+                        <span>Students</span>
+                    </a>
+
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a
+                        href="{{ url_for('faculty_management') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_management' %}active{% endif %}"
+                        title="Faculty Management"
+                    >
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Faculty Management</span>
+                    </a>
+                    {% endif %}
+
+                </div>
+            </section>
+
+            <!-- Placement Group -->
+            <section class="sidebar-group {% if request.endpoint in ['faculty_companies', 'faculty_applications', 'faculty_selection', 'faculty_add_company', 'edit_company'] %}is-open{% endif %}">
+
+                <button
+                    type="button"
+                    class="faculty-nav-link sidebar-group-toggle"
+                    aria-expanded="{% if request.endpoint in ['faculty_companies', 'faculty_applications', 'faculty_selection', 'faculty_add_company', 'edit_company'] %}true{% else %}false{% endif %}"
+                    title="Placement"
+                >
+                    <i class="fa-solid fa-building"></i>
+                    <span>Placement</span>
+                    <i class="fa-solid fa-chevron-down group-chevron"></i>
+                </button>
+
+                <div class="sidebar-submenu">
+
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a
+                        href="{{ url_for('faculty_companies') }}"
+                        class="faculty-nav-link {% if request.endpoint in ['faculty_companies', 'faculty_add_company', 'edit_company'] %}active{% endif %}"
+                        title="Companies"
+                    >
+                        <i class="fa-solid fa-building"></i>
+                        <span>Companies</span>
+                    </a>
+                    {% endif %}
+
+                    <a
+                        href="{{ url_for('faculty_applications') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_applications' %}active{% endif %}"
+                        title="Applications"
+                    >
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span>Applications</span>
+                    </a>
+
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a
+                        href="{{ url_for('faculty_selection') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_selection' %}active{% endif %}"
+                        title="Selection"
+                    >
+                        <i class="fa-solid fa-user-check"></i>
+                        <span>Selection</span>
+                    </a>
+                    {% endif %}
+
+                </div>
+            </section>
+
+            <!-- Notifications Group -->
+            <section class="sidebar-group {% if request.endpoint in ['faculty_notifications', 'faculty_send_announcement'] %}is-open{% endif %}">
+
+                <button
+                    type="button"
+                    class="faculty-nav-link sidebar-group-toggle"
+                    aria-expanded="{% if request.endpoint in ['faculty_notifications', 'faculty_send_announcement'] %}true{% else %}false{% endif %}"
+                    title="Notifications"
+                >
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Notifications</span>
+                    <i class="fa-solid fa-chevron-down group-chevron"></i>
+                </button>
+
+                <div class="sidebar-submenu">
+
+                    <!-- Received Messages -->
+                    <a
+                        href="{{ url_for('faculty_notifications') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_notifications' %}active{% endif %}"
+                        title="Received Messages"
+                    >
+                        <i class="fa-solid fa-inbox"></i>
+                        <span>Received Messages</span>
+
+                        {% if unread_notification_count > 0 %}
+                        <span class="notification-badge">
+                            {{ unread_notification_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    <!-- Send Announcements -->
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a
+                        href="{{ url_for('faculty_send_announcement') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_send_announcement' %}active{% endif %}"
+                        title="Send Announcements"
+                    >
+                        <i class="fa-solid fa-bullhorn"></i>
+                        <span>Send Announcements</span>
+                    </a>
+                    {% endif %}
+
+                </div>
+            </section>
+
+            <!-- Reports remains outside Notifications -->
+            <a
+                href="{{ url_for('faculty_reports') }}"
+                class="faculty-nav-link {% if request.endpoint == 'faculty_reports' %}active{% endif %}"
+                title="Placement Reports"
+            >
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Reports</span>
+            </a>
+
+        </nav>
+
+        <!-- Bottom Navigation -->
+        <div class="faculty-sidebar-bottom">
+
+            <a
+                href="{{ url_for('faculty_my_profile') }}"
+                class="faculty-nav-link {% if request.endpoint == 'faculty_my_profile' %}active{% endif %}"
+                title="My Profile"
+            >
+                <i class="fa-solid fa-user"></i>
+                <span>My Profile</span>
+            </a>
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="faculty-nav-link faculty-logout"
+                title="Logout"
+            >
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="faculty-main">
+
+        <section class="selection-page">
+
+            <div class="selection-heading">
+                <p class="faculty-label">PLACEMENT PORTAL</p>
+
+                <h1>Interview Rounds &amp; Selection</h1>
+
+                <p>
+                    Company interview rounds are defined when the company is added.
+                    Record each candidate's progress one round at a time.
+                </p>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                <div class="selection-message {% if category == 'error' %}error{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endwith %}
+
+            <!-- Selection Statistics -->
+            <div class="selection-stats">
+
+                <div class="selection-stat">
+                    <span>Total Applications</span>
+                    <strong>{{ stats['total'] or 0 }}</strong>
+                </div>
+
+                <div class="selection-stat">
+                    <span>Awaiting Rounds</span>
+                    <strong>{{ stats['shortlisted'] or 0 }}</strong>
+                </div>
+
+                <div class="selection-stat">
+                    <span>In Progress</span>
+                    <strong>{{ stats['in_progress'] or 0 }}</strong>
+                </div>
+
+                <div class="selection-stat">
+                    <span>Selected</span>
+                    <strong>{{ stats['selected'] or 0 }}</strong>
+                </div>
+
+                <div class="selection-stat">
+                    <span>Rejected</span>
+                    <strong>{{ stats['rejected'] or 0 }}</strong>
+                </div>
+
+            </div>
+
+            <!-- Candidate Round Progress -->
+            <section class="selection-panel">
+
+                <h2 class="panel-title">Candidate Round Progress</h2>
+
+                <p class="panel-subtitle">
+                    Only the next incomplete round can be updated.
+                    A failed round rejects the application; passing every
+                    configured round marks the candidate as selected.
+                </p>
+
+                <!-- Search and Filter -->
+                <div class="selection-toolbar">
+
+                    <input
+                        type="search"
+                        id="selectionSearch"
+                        placeholder="Search student or company..."
+                        aria-label="Search student or company"
+                    >
+
+                    <select id="selectionStatus" aria-label="Filter by application status">
+                        <option value="">All statuses</option>
+                        <option value="Shortlisted">Shortlisted</option>
+                        <option value="Interview in Progress">Interview in Progress</option>
+                        <option value="Selected">Selected</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+
+                </div>
+
+                <!-- Candidate List -->
+                <div class="candidate-list" id="candidateList">
+
+                    {% for candidate in candidates %}
+
+                    <article
+                        class="candidate-card"
+                        data-status="{{ candidate['status']|lower }}"
+                        data-search="{{ (candidate['student_name'] ~ ' ' ~ candidate['register_number'] ~ ' ' ~ candidate['company_name'] ~ ' ' ~ candidate['job_role'])|lower }}"
+                    >
+
+                        <div class="candidate-top">
+
+                            <div>
+                                <div class="candidate-name">
+                                    {{ candidate['student_name'] }}
+                                </div>
+
+                                <div class="candidate-meta">
+
+                                    <strong>Register No:</strong>
+                                    {{ candidate['register_number'] }}
+                                    &nbsp;·&nbsp;
+
+                                    <strong>Department:</strong>
+                                    {{ candidate['department'] }}
+                                    &nbsp;·&nbsp;
+
+                                    <strong>CGPA:</strong>
+                                    {{ candidate['cgpa'] }}
+
+                                    <br>
+
+                                    <strong>Company:</strong>
+                                    {{ candidate['company_name'] }}
+                                    &nbsp;·&nbsp;
+
+                                    <strong>Role:</strong>
+                                    {{ candidate['job_role'] }}
+                                    &nbsp;·&nbsp;
+
+                                    <strong>Resume score:</strong>
+
+                                    {% if candidate['resume_score'] is not none %}
+                                        {{ "%.1f"|format(candidate['resume_score']) }}
+                                    {% else %}
+                                        Not scored
+                                    {% endif %}
+
+                                </div>
+                            </div>
+
+                            <span class="status-badge {% if candidate['status'] == 'Selected' %}selected{% elif candidate['status'] == 'Rejected' %}rejected{% elif candidate['status'] == 'Interview in Progress' %}progress{% endif %}">
+                                {{ candidate['status'] }}
+                            </span>
+
+                        </div>
+
+                        {% if candidate['total_rounds'] > 0 %}
+
+                        <!-- Round Completion Progress -->
+                        <div class="progress-track">
+                            <div
+                                class="progress-fill"
+                                data-progress="{{ (candidate['completed_rounds'] / candidate['total_rounds'] * 100)|round(0) }}"
+                            ></div>
+                        </div>
+
+                        <div class="progress-label">
+                            {{ candidate['completed_rounds'] }}
+                            of
+                            {{ candidate['total_rounds'] }}
+                            rounds completed
+                        </div>
+
+                        <!-- Interview Rounds -->
+                        <div class="round-list">
+
+                            {% for round in candidate['rounds'] %}
+
+                            {% set result = candidate['round_results'].get(round['round_id']) %}
+                            {% set result_status = result['status'] if result else 'Pending' %}
+
+                            {% set is_next = candidate['current_round']
+                                and candidate['current_round']['round_id'] == round['round_id']
+                                and candidate['status'] not in ['Selected', 'Rejected']
+                            %}
+
+                            <div class="round-card">
+
+                                <h4>
+                                    Round {{ round['round_order'] }}:
+                                    {{ round['round_name'] }}
+                                </h4>
+
+                                <span class="round-status {% if result_status == 'Passed' %}passed{% elif result_status == 'Failed' %}failed{% endif %}">
+                                    {{ result_status }}
+                                </span>
+
+                                {% if result and result.get('remarks') %}
+                                <p class="round-note">
+                                    Remarks: {{ result['remarks'] }}
+                                </p>
+                                {% endif %}
+
+                                {% if is_next %}
+
+                                <!-- Update Current Round -->
+                                <form
+                                    class="round-form"
+                                    method="POST"
+                                    action="{{ url_for('update_interview_round', application_id=candidate['application_id'], round_id=round['round_id']) }}"
+                                >
+
+                                    <select name="result_status" required>
+                                        <option value="">Record result...</option>
+                                        <option value="Passed">Passed</option>
+                                        <option value="Failed">Failed</option>
+                                    </select>
+
+                                    <input
+                                        type="text"
+                                        name="remarks"
+                                        maxlength="500"
+                                        placeholder="Optional remarks"
+                                    >
+
+                                    <button type="submit">
+                                        Save Round Result
+                                    </button>
+
+                                </form>
+
+                                {% elif candidate['status'] in ['Selected', 'Rejected'] %}
+
+                                <p class="round-note">
+                                    Application completed; no further updates allowed.
+                                </p>
+
+                                {% elif result_status == 'Pending' %}
+
+                                <p class="round-note">
+                                    Complete the previous round first.
+                                </p>
+
+                                {% else %}
+
+                                <p class="round-note">
+                                    Result recorded.
+                                </p>
+
+                                {% endif %}
+
+                            </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                        {% elif candidate['status'] in ['Shortlisted', 'Interview in Progress'] %}
+
+                        <div class="empty-state">
+                            No interview rounds are configured for
+                            {{ candidate['company_name'] }}.
+                            Add or update this company's interview process
+                            from the Add Company workflow.
+                        </div>
+
+                        {% else %}
+
+                        <div class="round-note">
+                            Final application status has been recorded.
+                        </div>
+
+                        {% endif %}
+
+                    </article>
+
+                    {% else %}
+
+                    <div class="empty-state">
+                        No shortlisted candidates yet.
+                        Update an application to Shortlisted from the
+                        Applications page to start the interview process.
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+        </section>
+
+        <!-- SHARED FOOTER -->
+        {% include 'components/site_footer.html' %}
+
+    </main>
+
+    <!-- Candidate Search and Status Filter -->
+    <script>
+        const searchInput = document.getElementById("selectionSearch");
+        const statusSelect = document.getElementById("selectionStatus");
+        const candidateCards = document.querySelectorAll(".candidate-card");
+
+        function filterCandidates() {
+            const query = searchInput.value.toLowerCase().trim();
+            const status = statusSelect.value.toLowerCase();
+
+            candidateCards.forEach(card => {
+                const matchesText = card.dataset.search.includes(query);
+                const matchesStatus = !status || card.dataset.status === status;
+
+                card.style.display =
+                    matchesText && matchesStatus ? "" : "none";
+            });
+        }
+
+        searchInput.addEventListener("input", filterCandidates);
+        statusSelect.addEventListener("change", filterCandidates);
+
+        // Apply progress widths after the page has rendered.
+        document.querySelectorAll(".progress-fill[data-progress]").forEach(bar => {
+            const progress = Number(bar.dataset.progress);
+
+            bar.style.width =
+                Math.max(0, Math.min(100, progress)) + "%";
+        });
+    </script>
+
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}" defer></script>
+
+</body>
+</html>

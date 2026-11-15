@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="/static/favicon.png?v=3">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Upload Students</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar-enhancements.css') }}">
+
+    <style>
+        /* Student-management form layout: consistent sizing and alignment */
+        .faculty-main {
+            min-width: 0;
+            width: auto;
+            max-width: none;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .faculty-page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .faculty-panel {
+            width: 100%;
+            max-width: 1100px;
+            box-sizing: border-box;
+            margin: 20px auto 24px;
+        }
+
+        .faculty-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px 28px;
+            align-items: start;
+        }
+
+        .faculty-form-group { min-width: 0; }
+
+        .faculty-form-group input,
+        .faculty-form-group select,
+        .faculty-form-group textarea {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .faculty-password-note { margin-top: 22px; }
+        .faculty-submit-btn { margin-top: 18px; }
+
+        @media (max-width: 760px) {
+            .faculty-form-grid {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 18px;
+            }
+
+            .faculty-page-header { gap: 14px; }
+            .faculty-panel { padding: 20px; }
+        }
+
+        /* Bulk-upload controls */
+        .bulk-upload-panel { max-width: 1100px; }
+        .bulk-upload-description { margin-bottom: 22px; }
+
+        .bulk-required-columns {
+            padding: 14px 16px;
+            margin: 18px 0 22px;
+            border: 1px solid rgba(169, 189, 210, .22);
+            border-radius: 12px;
+            background: rgba(169, 189, 210, .07);
+            color: #c7d1db;
+            line-height: 1.7;
+        }
+
+        .bulk-file-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .bulk-file-label {
+            display: block;
+            color: #e7edf4;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .bulk-file-label i {
+            margin-right: 8px;
+            color: #a9c1d9;
+        }
+
+        .bulk-dropzone {
+            width: 100%;
+            min-height: 170px;
+            padding: 20px;
+            border: 1.5px dashed rgba(169, 193, 217, .48);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .025);
+            box-sizing: border-box;
+            transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+        }
+
+        .bulk-dropzone:hover,
+        .bulk-dropzone.drag-over {
+            border-color: #a9c1d9;
+            background: rgba(169, 193, 217, .075);
+            box-shadow: 0 0 0 3px rgba(169, 193, 217, .06);
+        }
+
+        .bulk-dropzone-content {
+            min-height: 126px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            cursor: pointer;
+        }
+
+        .bulk-dropzone-content:focus-visible {
+            outline: 2px solid #a9c1d9;
+            outline-offset: 5px;
+            border-radius: 10px;
+        }
+
+        .bulk-upload-icon {
+            width: 60px;
+            height: 60px;
+            flex: 0 0 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            background: rgba(169, 193, 217, .13);
+            color: #b4cbe1;
+            font-size: 26px;
+        }
+
+        .bulk-upload-copy {
+            display: flex;
+            flex: 1;
+            min-width: 0;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .bulk-upload-copy strong {
+            color: #f5f7fa;
+            font-size: 16px;
+        }
+
+        .bulk-upload-copy span {
+            color: #b8c1cc;
+            font-size: 14px;
+        }
+
+        .bulk-upload-copy small {
+            color: #8796a6;
+            font-size: 12px;
+        }
+
+        .bulk-browse-btn {
+            display: inline-flex;
+            flex: 0 0 auto;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 0 18px;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 10px;
+            background: #a9c1d9;
+            color: #101820;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .2s ease, transform .2s ease;
+        }
+
+        .bulk-browse-btn:hover {
+            background: #c0d5e9;
+            transform: translateY(-1px);
+        }
+
+        .bulk-selected-file {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            min-width: 0;
+            padding: 14px;
+            border: 1px solid rgba(169, 193, 217, .25);
+            border-radius: 12px;
+            background: rgba(169, 193, 217, .07);
+        }
+
+        .bulk-selected-file[hidden],
+        .bulk-dropzone-content[hidden] {
+            display: none !important;
+        }
+
+        .bulk-selected-file-icon {
+            width: 46px;
+            height: 46px;
+            flex: 0 0 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(69, 180, 120, .12);
+            color: #72d6a0;
+            font-size: 22px;
+        }
+
+        .bulk-selected-file-details {
+            display: flex;
+            flex: 1;
+            min-width: 0;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .bulk-selected-file-details strong {
+            color: #f5f7fa;
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+
+        .bulk-selected-file-details span {
+            color: #aab6c3;
+            font-size: 12px;
+        }
+
+        .bulk-remove-file {
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+            border: 1px solid rgba(255, 100, 100, .25);
+            border-radius: 10px;
+            background: rgba(255, 100, 100, .08);
+            color: #ff9999;
+            cursor: pointer;
+        }
+
+        .bulk-remove-file:hover {
+            background: rgba(255, 100, 100, .18);
+        }
+
+        .bulk-upload-actions {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 24px;
+        }
+
+        .bulk-result-message { overflow-wrap: anywhere; }
+
+        @media (max-width: 760px) {
+            .bulk-upload-actions,
+            .bulk-upload-actions .faculty-submit-btn {
+                width: 100%;
+            }
+
+            .bulk-dropzone { padding: 15px; }
+
+            .bulk-dropzone-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 13px;
+            }
+
+            .bulk-upload-copy { flex: initial; }
+            .bulk-browse-btn { width: 100%; }
+        }
+
+        .visually-hidden-file {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+    </style>
+</head>
+
+<body class="faculty-dashboard-body">
+
+<!-- ================= FACULTY SIDEBAR ================= -->
+<aside class="faculty-sidebar" id="facultySidebar">
+
+    <!-- Logo and Collapse Button -->
+    <div class="faculty-sidebar-brand">
+        <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Vel Tech Smart Placement Portal"
+        >
+
+        <button
+            class="sidebar-collapse-btn"
+            type="button"
+            data-sidebar-toggle="faculty"
+            aria-label="Collapse sidebar"
+            aria-expanded="true"
+            title="Collapse sidebar"
+        >
+            <i class="fa-solid fa-angles-left"></i>
+        </button>
+    </div>
+
+    <!-- Faculty Identity -->
+    <div class="faculty-identity">
+        <div class="faculty-avatar">
+            <i class="fa-solid fa-user-tie"></i>
+        </div>
+
+        <div class="faculty-identity-text">
+            <strong>{{ session.get('faculty_name', 'Faculty') }}</strong>
+
+            <span>
+                {{ session.get(
+                    'faculty_role',
+                    faculty_role if faculty_role is defined else 'Faculty'
+                ) }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="faculty-nav" aria-label="Faculty navigation">
+
+        <!-- Dashboard -->
+        <a
+            href="{{ url_for('faculty_dashboard') }}"
+            class="faculty-nav-link {% if request.endpoint == 'faculty_dashboard' %}active{% endif %}"
+            title="Dashboard"
+        >
+            <i class="fa-solid fa-house"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <!-- Manage Group -->
+        <section class="sidebar-group {% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students', 'faculty_management'] %}is-open{% endif %}">
+
+            <button
+                type="button"
+                class="faculty-nav-link sidebar-group-toggle"
+                aria-expanded="{% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students', 'faculty_management'] %}true{% else %}false{% endif %}"
+                title="Manage"
+            >
+                <i class="fa-solid fa-users-gear"></i>
+                <span>Manage</span>
+                <i class="fa-solid fa-chevron-down group-chevron"></i>
+            </button>
+
+            <div class="sidebar-submenu">
+                <a
+                    href="{{ url_for('faculty_students') }}"
+                    class="faculty-nav-link {% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students'] %}active{% endif %}"
+                    title="Students"
+                >
+                    <i class="fa-solid fa-users"></i>
+                    <span>Students</span>
+                </a>
+
+                {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                <a
+                    href="{{ url_for('faculty_management') }}"
+                    class="faculty-nav-link {% if request.endpoint == 'faculty_management' %}active{% endif %}"
+                    title="Faculty Management"
+                >
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span>Faculty Management</span>
+                </a>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Placement Group -->
+        <section class="sidebar-group {% if request.endpoint in ['faculty_companies', 'faculty_applications', 'faculty_selection', 'faculty_add_company', 'edit_company'] %}is-open{% endif %}">
+
+            <button
+                type="button"
+                class="faculty-nav-link sidebar-group-toggle"
+                aria-expanded="{% if request.endpoint in ['faculty_companies', 'faculty_applications', 'faculty_selection', 'faculty_add_company', 'edit_company'] %}true{% else %}false{% endif %}"
+                title="Placement"
+            >
+                <i class="fa-solid fa-building"></i>
+                <span>Placement</span>
+                <i class="fa-solid fa-chevron-down group-chevron"></i>
+            </button>
+
+            <div class="sidebar-submenu">
+                {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                <a
+                    href="{{ url_for('faculty_companies') }}"
+                    class="faculty-nav-link {% if request.endpoint in ['faculty_companies', 'faculty_add_company', 'edit_company'] %}active{% endif %}"
+                    title="Companies"
+                >
+                    <i class="fa-solid fa-building"></i>
+                    <span>Companies</span>
+                </a>
+                {% endif %}
+
+                <a
+                    href="{{ url_for('faculty_applications') }}"
+                    class="faculty-nav-link {% if request.endpoint == 'faculty_applications' %}active{% endif %}"
+                    title="Applications"
+                >
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span>Applications</span>
+                </a>
+
+                {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                <a
+                    href="{{ url_for('faculty_selection') }}"
+                    class="faculty-nav-link {% if request.endpoint == 'faculty_selection' %}active{% endif %}"
+                    title="Selection"
+                >
+                    <i class="fa-solid fa-user-check"></i>
+                    <span>Selection</span>
+                </a>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Notifications and Reports Group -->
+        <section class="sidebar-group {% if request.endpoint in ['faculty_notifications', 'faculty_send_announcement', 'faculty_reports'] %}is-open{% endif %}">
+
+            <button
+                type="button"
+                class="faculty-nav-link sidebar-group-toggle"
+                aria-expanded="{% if request.endpoint in ['faculty_notifications', 'faculty_send_announcement', 'faculty_reports'] %}true{% else %}false{% endif %}"
+                title="Notifications and Reports"
+            >
+                <i class="fa-solid fa-bell"></i>
+                <span>Notifications</span>
+                <i class="fa-solid fa-chevron-down group-chevron"></i>
+            </button>
+
+            <div class="sidebar-submenu">
+
+                <!-- Received Messages -->
+                <a
+                    href="{{ url_for('faculty_notifications') }}"
+                    class="faculty-nav-link {% if request.endpoint == 'faculty_notifications' %}active{% endif %}"
+                    title="Received Messages"
+                >
+                    <i class="fa-solid fa-inbox"></i>
+                    <span>Received Messages</span>
+
+                    {% if unread_notification_count > 0 %}
+                    <span class="notification-badge">
+                        {{ unread_notification_count }}
+                    </span>
+                    {% endif %}
+                </a>
+
+                <!-- Send Announcements -->
+                {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                <a
+                    href="{{ url_for('faculty_send_announcement') }}"
+                    class="faculty-nav-link {% if request.endpoint == 'faculty_send_announcement' %}active{% endif %}"
+                    title="Send Announcements"
+                >
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <span>Send Announcements</span>
+                </a>
+                {% endif %}
+
+                <!-- Reports -->
+                <a
+                    href="{{ url_for('faculty_reports') }}"
+                    class="faculty-nav-link {% if request.endpoint == 'faculty_reports' %}active{% endif %}"
+                    title="Placement Reports"
+                >
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Reports</span>
+                </a>
+            </div>
+        </section>
+    </nav>
+
+    <!-- Bottom Navigation -->
+    <div class="faculty-sidebar-bottom">
+        <a
+            href="{{ url_for('faculty_my_profile') }}"
+            class="faculty-nav-link {% if request.endpoint == 'faculty_my_profile' %}active{% endif %}"
+            title="My Profile"
+        >
+            <i class="fa-solid fa-user"></i>
+            <span>My Profile</span>
+        </a>
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="faculty-nav-link faculty-logout"
+            title="Logout"
+        >
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </a>
+    </div>
+</aside>
+
+<main class="faculty-main">
+
+    <!-- HEADER -->
+    <div class="faculty-page-header">
+        <div>
+            <p class="faculty-label">STUDENT MANAGEMENT</p>
+
+            <h1>Bulk Upload Students</h1>
+
+            <p>
+                Add multiple students using an Excel file.
+            </p>
+        </div>
+
+        <a
+            href="{{ url_for('faculty_students') }}"
+            class="faculty-back-btn"
+        >
+            ← Students
+        </a>
+    </div>
+
+    <!-- UPLOAD -->
+    <section class="faculty-panel bulk-upload-panel">
+
+        <div class="faculty-panel-header">
+            <div>
+                <h2>Upload Excel File</h2>
+
+                <p>
+                    Upload an .xlsx file containing student records.
+                </p>
+            </div>
+        </div>
+
+        <div class="faculty-form-group">
+            <div class="bulk-required-columns">
+                <p class="faculty-field-hint">
+                    Required columns:
+                    <strong>
+                        Register Number, Name, Email, Department,
+                        Admission Year, CGPA, Date of Birth
+                    </strong>
+                </p>
+                <p class="faculty-field-hint">
+                    Enter the admission year (for example, 2024). The current academic year and batch are calculated automatically.
+                </p>
+            </div>
+        </div>
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+            action="{{ url_for('bulk_upload_students') }}"
+        >
+            <div class="faculty-form-group bulk-file-group">
+
+                <label class="bulk-file-label" for="excel_file">
+                    <i class="fa-solid fa-file-excel"></i>
+                    Excel File
+                </label>
+
+                <div class="bulk-dropzone" id="bulkDropzone">
+
+                    <input
+                        type="file"
+                        name="excel_file"
+                        id="excel_file"
+                        accept=".xlsx"
+                        class="visually-hidden-file"
+                        required
+                    >
+
+                    <div
+                        class="bulk-dropzone-content"
+                        id="bulkDropzoneContent"
+                        role="button"
+                        tabindex="0"
+                        aria-label="Choose Excel file"
+                    >
+                        <div class="bulk-upload-icon">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+
+                        <div class="bulk-upload-copy">
+                            <strong>Choose an Excel file</strong>
+                            <span>or drag and drop it here</span>
+                            <small>Excel workbook · .xlsx format</small>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="bulk-browse-btn"
+                            id="bulkBrowseBtn"
+                        >
+                            <i class="fa-solid fa-folder-open"></i>
+                            Browse files
+                        </button>
+                    </div>
+
+                    <div class="bulk-selected-file" id="bulkSelectedFile" hidden>
+                        <div class="bulk-selected-file-icon">
+                            <i class="fa-solid fa-file-excel"></i>
+                        </div>
+
+                        <div class="bulk-selected-file-details">
+                            <strong id="bulkFileName">No file selected</strong>
+                            <span id="bulkFileSize"></span>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="bulk-remove-file"
+                            id="bulkRemoveFile"
+                            aria-label="Remove selected file"
+                            title="Remove file"
+                        >
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bulk-upload-actions">
+                <button
+                    type="submit"
+                    class="faculty-submit-btn"
+                >
+                    <i class="fa-solid fa-upload"></i>
+                    Upload Students
+                </button>
+            </div>
+        </form>
+    </section>
+
+    {% if success %}
+    <section class="faculty-panel bulk-upload-panel bulk-result-message">
+
+        <div class="faculty-panel-header">
+            <div>
+                <h2>Upload Result</h2>
+            </div>
+        </div>
+
+        <p>
+            Students Added:
+            <strong>{{ added_count }}</strong>
+        </p>
+
+        <p>
+            Rows Skipped:
+            <strong>{{ skipped_count }}</strong>
+        </p>
+
+        {% if errors %}
+        <div>
+            <h3>Row Details</h3>
+
+            {% for error in errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    {% if error %}
+    <section class="faculty-panel bulk-upload-panel bulk-result-message">
+        <p>{{ error }}</p>
+    </section>
+    {% endif %}
+
+    {% include "components/site_footer.html" %}
+
+</main>
+
+<script>
+(() => {
+    const input = document.getElementById("excel_file");
+    const dropzone = document.getElementById("bulkDropzone");
+    const content = document.getElementById("bulkDropzoneContent");
+    const browse = document.getElementById("bulkBrowseBtn");
+    const selected = document.getElementById("bulkSelectedFile");
+    const fileName = document.getElementById("bulkFileName");
+    const fileSize = document.getElementById("bulkFileSize");
+    const remove = document.getElementById("bulkRemoveFile");
+
+    if (!input || !dropzone || !content || !browse || !selected || !remove) return;
+
+    function openPicker() {
+        input.click();
+    }
+
+    function displayFile(file) {
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith(".xlsx")) {
+            input.value = "";
+            alert("Please select an Excel workbook with the .xlsx extension.");
+            return;
+        }
+
+        fileName.textContent = file.name;
+        fileSize.textContent = file.size < 1024 * 1024
+            ? `${(file.size / 1024).toFixed(1)} KB`
+            : `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+
+        content.hidden = true;
+        selected.hidden = false;
+    }
+
+    function clearFile() {
+        input.value = "";
+        selected.hidden = true;
+        content.hidden = false;
+    }
+
+    browse.addEventListener("click", event => {
+        event.stopPropagation();
+        openPicker();
+    });
+
+    content.addEventListener("click", event => {
+        if (event.target.closest("button")) return;
+        openPicker();
+    });
+
+    content.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openPicker();
+        }
+    });
+
+    input.addEventListener("change", () => displayFile(input.files[0]));
+    remove.addEventListener("click", clearFile);
+
+    ["dragenter", "dragover"].forEach(type => {
+        dropzone.addEventListener(type, event => {
+            event.preventDefault();
+            dropzone.classList.add("drag-over");
+        });
+    });
+
+    ["dragleave", "drop"].forEach(type => {
+        dropzone.addEventListener(type, event => {
+            event.preventDefault();
+            dropzone.classList.remove("drag-over");
+        });
+    });
+
+    dropzone.addEventListener("drop", event => {
+        const file = event.dataTransfer.files[0];
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith(".xlsx")) {
+            alert("Please select an Excel workbook with the .xlsx extension.");
+            return;
+        }
+
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        input.files = transfer.files;
+        displayFile(file);
+    });
+})();
+</script>
+
+<script src="{{ url_for('static', filename='js/sidebar.js') }}" defer></script>
+</body>
+</html>

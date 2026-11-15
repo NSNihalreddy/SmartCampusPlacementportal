@@ -1,0 +1,96 @@
+/* Student sidebar toggle and layout enhancements */
+body.student-dashboard-body .student-sidebar-collapse-btn { position: sticky; top: 0; align-self: flex-end; z-index: 2; }
+body.student-dashboard-body.student-sidebar-collapsed .student-sidebar { width: 84px; }
+body.student-dashboard-body.student-sidebar-collapsed .student-main { margin-left: 84px; width: calc(100% - 84px); }
+body.student-dashboard-body.student-sidebar-collapsed .student-sidebar .sidebar-logo img { max-width: 48px; }
+body.student-dashboard-body.student-sidebar-collapsed .student-sidebar ul.student-sidebar-nav li a { justify-content: center; padding-left: 8px; padding-right: 8px; }
+body.student-dashboard-body.student-sidebar-collapsed .student-sidebar ul.student-sidebar-nav li a span { display: none; }
+body.student-dashboard-body.student-sidebar-collapsed .student-sidebar-collapse-btn i { transform: rotate(180deg); }
+
+/* ==========================================
+   FACULTY PROFILE - CHANGE PASSWORD MODAL
+   Dark glass theme matching the portal
+========================================== */
+
+/* Modal card */
+#passwordModal .profile-modal-card {
+    background: rgba(43, 39, 42, 0.98) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    border-radius: 22px !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Modal heading */
+#passwordModal .profile-modal-header h2 {
+    color: #ffffff !important;
+}
+
+/* Description text */
+#passwordModal .profile-modal-header p {
+    color: #c4c8d0 !important;
+}
+
+/* Form labels */
+#passwordModal .password-form .profile-field label {
+    color: #f1f3f7 !important;
+}
+
+/* Password input fields */
+#passwordModal .password-form input[type="password"] {
+    background: rgba(255, 255, 255, 0.07) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    caret-color: #ffffff;
+}
+
+/* Input focus */
+#passwordModal .password-form input[type="password"]:focus {
+    background: rgba(255, 255, 255, 0.10) !important;
+    border-color: #4263ff !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(66, 99, 255, 0.22) !important;
+}
+
+/* Close button */
+#passwordModal .profile-modal-close {
+    background: rgba(255, 255, 255, 0.09) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+#passwordModal .profile-modal-close:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+}
+
+/* Cancel button */
+#passwordModal .profile-modal-actions .profile-cancel-btn {
+    background: rgba(255, 255, 255, 0.10) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+#passwordModal .profile-modal-actions .profile-cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.17) !important;
+}
+
+/* Update Password button */
+#passwordModal .profile-modal-actions .profile-save-btn {
+    background: #365cff !important;
+    color: #ffffff !important;
+    border: 1px solid #365cff !important;
+}
+
+#passwordModal .profile-modal-actions .profile-save-btn:hover {
+    background: #2849df !important;
+    border-color: #2849df !important;
+}
+
+/* Keep the dark overlay behind the modal */
+#passwordModal .profile-modal-backdrop {
+    background: rgba(9, 12, 22, 0.78) !important;
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+}

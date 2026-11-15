@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="/static/favicon.png?v=3">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Student</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        /* STUDENT MANAGEMENT FORM LAYOUT */
+        .faculty-main {
+            min-width: 0;
+            width: auto;
+            max-width: none;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .faculty-page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .faculty-panel {
+            width: 100%;
+            max-width: 1100px;
+            box-sizing: border-box;
+            margin: 20px auto 24px;
+        }
+
+        .faculty-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px 28px;
+            align-items: start;
+        }
+
+        .faculty-form-group {
+            min-width: 0;
+        }
+
+        .faculty-form-group input,
+        .faculty-form-group select,
+        .faculty-form-group textarea {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .faculty-password-note {
+            margin-top: 22px;
+        }
+
+        .faculty-submit-btn {
+            margin-top: 18px;
+        }
+
+        @media (max-width: 760px) {
+            .faculty-form-grid {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 18px;
+            }
+
+            .faculty-page-header {
+                gap: 14px;
+            }
+
+            .faculty-panel {
+                padding: 20px;
+            }
+        }
+
+        /* EDIT STUDENT FORM */
+        .faculty-edit-form-panel {
+            max-width: 1100px;
+            margin-top: 20px;
+        }
+
+        .faculty-edit-form {
+            width: 100%;
+        }
+
+        .faculty-edit-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px 28px;
+            align-items: start;
+        }
+
+        .faculty-edit-form-grid .faculty-form-group {
+            min-width: 0;
+        }
+
+        .faculty-edit-form-grid input,
+        .faculty-edit-form-grid select {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .faculty-edit-full-width {
+            grid-column: 1 / -1;
+        }
+
+        .faculty-edit-readonly {
+            background: rgba(255,255,255,0.035) !important;
+            color: #aab5c0 !important;
+            cursor: not-allowed;
+        }
+
+        .faculty-edit-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 30px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.10);
+        }
+
+        .faculty-edit-cancel-btn,
+        .faculty-edit-save-btn {
+            min-height: 48px;
+            padding: 0 22px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .faculty-edit-cancel-btn {
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06);
+            color: #c7d1db;
+        }
+
+        .faculty-edit-cancel-btn:hover {
+            background: rgba(255,255,255,0.11);
+            transform: translateY(-1px);
+        }
+
+        .faculty-edit-save-btn {
+            border: 1px solid rgba(169,189,210,0.35);
+            background: #a9bdd2;
+            color: #111820;
+        }
+
+        .faculty-edit-save-btn:hover {
+            background: #bdd0e2;
+            transform: translateY(-1px);
+        }
+
+        .faculty-edit-note {
+            margin-top: 8px;
+            color: #9aa7b4;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 760px) {
+            .faculty-edit-form-grid {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 18px;
+            }
+
+            .faculty-edit-full-width {
+                grid-column: auto;
+            }
+
+            .faculty-edit-actions {
+                flex-direction: column-reverse;
+            }
+
+            .faculty-edit-cancel-btn,
+            .faculty-edit-save-btn {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+
+<body class="faculty-dashboard-body faculty-edit-student-page">
+
+    <!-- FACULTY SIDEBAR -->
+    <aside class="faculty-sidebar" id="facultySidebar">
+
+        <div class="faculty-sidebar-brand">
+            <img src="{{ url_for('static', filename='images/logo.png') }}"
+                 alt="Vel Tech Smart Placement Portal">
+
+            <button class="sidebar-collapse-btn"
+                    type="button"
+                    data-sidebar-toggle="faculty"
+                    aria-label="Collapse sidebar"
+                    aria-expanded="true"
+                    title="Collapse sidebar">
+                <i class="fa-solid fa-angles-left"></i>
+            </button>
+        </div>
+
+        <div class="faculty-identity">
+            <div class="faculty-avatar">
+                <i class="fa-solid fa-user-tie"></i>
+            </div>
+
+            <div class="faculty-identity-text">
+                <strong>{{ session.get('faculty_name', 'Faculty') }}</strong>
+                <span>
+                    {{ session.get(
+                        'faculty_role',
+                        faculty_role if faculty_role is defined else 'Faculty'
+                    ) }}
+                </span>
+            </div>
+        </div>
+
+        <nav class="faculty-nav" aria-label="Faculty navigation">
+
+            <!-- DASHBOARD -->
+            <a href="{{ url_for('faculty_dashboard') }}"
+               class="faculty-nav-link {% if request.endpoint == 'faculty_dashboard' %}active{% endif %}"
+               title="Dashboard">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <!-- MANAGE GROUP -->
+            <section class="sidebar-group {% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students', 'faculty_management'] %}is-open{% endif %}">
+
+                <button type="button"
+                        class="faculty-nav-link sidebar-group-toggle"
+                        aria-expanded="{% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students', 'faculty_management'] %}true{% else %}false{% endif %}"
+                        title="Manage">
+                    <i class="fa-solid fa-users-gear"></i>
+                    <span>Manage</span>
+                    <i class="fa-solid fa-chevron-down group-chevron"></i>
+                </button>
+
+                <div class="sidebar-submenu">
+                    <a href="{{ url_for('faculty_students') }}"
+                       class="faculty-nav-link {% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students'] %}active{% endif %}"
+                       title="Students">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Students</span>
+                    </a>
+
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a href="{{ url_for('faculty_management') }}"
+                       class="faculty-nav-link {% if request.endpoint == 'faculty_management' %}active{% endif %}"
+                       title="Faculty Management">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Faculty Management</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- PLACEMENT GROUP -->
+            <section class="sidebar-group {% if request.endpoint in ['faculty_companies', 'faculty_applications', 'faculty_selection', 'faculty_add_company', 'edit_company'] %}is-open{% endif %}">
+
+                <button type="button"
+                        class="faculty-nav-link sidebar-group-toggle"
+                        aria-expanded="{% if request.endpoint in ['faculty_companies', 'faculty_applications', 'faculty_selection', 'faculty_add_company', 'edit_company'] %}true{% else %}false{% endif %}"
+                        title="Placement">
+                    <i class="fa-solid fa-building"></i>
+                    <span>Placement</span>
+                    <i class="fa-solid fa-chevron-down group-chevron"></i>
+                </button>
+
+                <div class="sidebar-submenu">
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a href="{{ url_for('faculty_companies') }}"
+                       class="faculty-nav-link {% if request.endpoint in ['faculty_companies', 'faculty_add_company', 'edit_company'] %}active{% endif %}"
+                       title="Companies">
+                        <i class="fa-solid fa-building"></i>
+                        <span>Companies</span>
+                    </a>
+                    {% endif %}
+
+                    <a href="{{ url_for('faculty_applications') }}"
+                       class="faculty-nav-link {% if request.endpoint == 'faculty_applications' %}active{% endif %}"
+                       title="Applications">
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span>Applications</span>
+                    </a>
+
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a href="{{ url_for('faculty_selection') }}"
+                       class="faculty-nav-link {% if request.endpoint == 'faculty_selection' %}active{% endif %}"
+                       title="Selection">
+                        <i class="fa-solid fa-user-check"></i>
+                        <span>Selection</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- NOTIFICATIONS GROUP -->
+            <section class="sidebar-group {% if request.endpoint in ['faculty_notifications', 'faculty_send_announcement', 'faculty_reports'] %}is-open{% endif %}">
+
+                <button type="button"
+                        class="faculty-nav-link sidebar-group-toggle"
+                        aria-expanded="{% if request.endpoint in ['faculty_notifications', 'faculty_send_announcement', 'faculty_reports'] %}true{% else %}false{% endif %}"
+                        title="Notifications and Reports">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Notifications</span>
+                    <i class="fa-solid fa-chevron-down group-chevron"></i>
+                </button>
+
+                <div class="sidebar-submenu">
+                    <a href="{{ url_for('faculty_notifications') }}"
+                       class="faculty-nav-link {% if request.endpoint == 'faculty_notifications' %}active{% endif %}"
+                       title="Received Messages">
+                        <i class="fa-solid fa-inbox"></i>
+                        <span>Received Messages</span>
+
+                        {% if unread_notification_count > 0 %}
+                        <span class="notification-badge">
+                            {{ unread_notification_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a href="{{ url_for('faculty_send_announcement') }}"
+                       class="faculty-nav-link {% if request.endpoint == 'faculty_send_announcement' %}active{% endif %}"
+                       title="Send Announcements">
+                        <i class="fa-solid fa-bullhorn"></i>
+                        <span>Send Announcements</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- REPORTS -->
+            <a href="{{ url_for('faculty_reports') }}"
+               class="faculty-nav-link {% if request.endpoint == 'faculty_reports' %}active{% endif %}"
+               title="Placement Reports">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Reports</span>
+            </a>
+        </nav>
+
+        <!-- BOTTOM NAVIGATION -->
+        <div class="faculty-sidebar-bottom">
+            <a href="{{ url_for('faculty_my_profile') }}"
+               class="faculty-nav-link {% if request.endpoint == 'faculty_my_profile' %}active{% endif %}"
+               title="My Profile">
+                <i class="fa-solid fa-user"></i>
+                <span>My Profile</span>
+            </a>
+
+            <a href="{{ url_for('logout') }}"
+               class="faculty-nav-link faculty-logout"
+               title="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="faculty-main">
+
+        <!-- HEADER -->
+        <div class="faculty-page-header">
+            <div>
+                <p class="faculty-label">STUDENT MANAGEMENT</p>
+
+                <h1>Edit Student</h1>
+
+                <p>Update student academic and personal details</p>
+            </div>
+
+            <a href="{{ url_for(
+                'faculty_student_details',
+                student_id=student['id']
+            ) }}"
+               class="faculty-back-btn">
+                ← Student Record
+            </a>
+        </div>
+
+        <!-- EDIT FORM -->
+        <section class="faculty-panel faculty-edit-form-panel">
+
+            <div class="faculty-panel-header">
+                <div>
+                    <h2>Student Information</h2>
+                    <p>Make the required changes and save them.</p>
+                </div>
+            </div>
+
+            <form method="POST" class="faculty-edit-form">
+
+                <div class="faculty-edit-form-grid">
+
+                    <!-- REGISTER NUMBER -->
+                    <div class="faculty-form-group">
+                        <label for="register_number">Register Number</label>
+
+                        <input type="text"
+                               id="register_number"
+                               value="{{ student['register_number'] }}"
+                               class="faculty-edit-readonly"
+                               readonly>
+
+                        <p class="faculty-edit-note">
+                            Register Number cannot be changed.
+                        </p>
+                    </div>
+
+                    <!-- NAME -->
+                    <div class="faculty-form-group">
+                        <label for="name">Name</label>
+
+                        <input type="text"
+                               name="name"
+                               id="name"
+                               value="{{ student['name'] }}"
+                               required>
+                    </div>
+
+                    <!-- EMAIL -->
+                    <div class="faculty-form-group">
+                        <label for="email">Email</label>
+
+                        <input type="email"
+                               name="email"
+                               id="email"
+                               value="{{ student['email'] }}"
+                               required>
+
+                        <p class="faculty-edit-note">
+                            Use the student's @veltech.edu.in email.
+                        </p>
+                    </div>
+
+                    <!-- DEPARTMENT -->
+                    <div class="faculty-form-group">
+                        <label for="department">Department</label>
+
+                        <select name="department" id="department" required>
+                            <option value="CSE"
+                                {% if student['department'] == 'CSE' %}selected{% endif %}>
+                                CSE
+                            </option>
+
+                            <option value="AI & DS"
+                                {% if student['department'] == 'AI & DS' %}selected{% endif %}>
+                                AI & DS
+                            </option>
+
+                            <option value="IT"
+                                {% if student['department'] == 'IT' %}selected{% endif %}>
+                                IT
+                            </option>
+
+                            <option value="ECE"
+                                {% if student['department'] == 'ECE' %}selected{% endif %}>
+                                ECE
+                            </option>
+
+                            <option value="EEE"
+                                {% if student['department'] == 'EEE' %}selected{% endif %}>
+                                EEE
+                            </option>
+
+                            <option value="MECH"
+                                {% if student['department'] == 'MECH' %}selected{% endif %}>
+                                MECH
+                            </option>
+
+                            <option value="CIVIL"
+                                {% if student['department'] == 'CIVIL' %}selected{% endif %}>
+                                CIVIL
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- ADMISSION YEAR -->
+                    <div class="faculty-form-group">
+                        <label for="admission_year">Admission Year</label>
+
+                        <input
+                            type="number"
+                            name="admission_year"
+                            id="admission_year"
+                            value="{{ student['admission_year'] if student['admission_year'] else '' }}"
+                            min="2000"
+                            max="{{ current_calendar_year }}"
+                            placeholder="e.g. 2024"
+                            required>
+                        <small class="faculty-edit-note">
+                            Batch: {{ student['admission_year'] }}-{{ student['admission_year']|int + 4 if student['admission_year'] else 'Not assigned' }}.
+                            Current academic year is calculated automatically.
+                        </small>
+                    </div>
+
+                    <!-- CGPA -->
+                    <div class="faculty-form-group">
+                        <label for="cgpa">CGPA</label>
+
+                        <input type="number"
+                               name="cgpa"
+                               id="cgpa"
+                               value="{{ student['cgpa'] }}"
+                               min="0"
+                               max="10"
+                               step="0.01"
+                               required>
+                    </div>
+
+                    <!-- DATE OF BIRTH -->
+                    <div class="faculty-form-group">
+                        <label for="date_of_birth">Date of Birth</label>
+
+                        <input type="text"
+                               name="date_of_birth"
+                               id="date_of_birth"
+                               value="{{ student['date_of_birth'] }}"
+                               placeholder="DDMMYYYY"
+                               maxlength="8"
+                               required>
+
+                        <p class="faculty-edit-note">
+                            Format: DDMMYYYY
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="faculty-edit-actions">
+
+                    <a href="{{ url_for(
+                        'faculty_student_details',
+                        student_id=student['id']
+                    ) }}"
+                       class="faculty-edit-cancel-btn">
+                        <i class="fa-solid fa-xmark"></i>
+                        Cancel
+                    </a>
+
+                    <button type="submit" class="faculty-edit-save-btn">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Save Changes
+                    </button>
+
+                </div>
+            </form>
+        </section>
+
+        {% include "components/site_footer.html" %}
+
+    </main>
+
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}" defer></script>
+
+    <script>
+        /* CGPA VALIDATION */
+        const cgpaInput = document.getElementById("cgpa");
+
+        if (cgpaInput) {
+            cgpaInput.addEventListener("input", function () {
+                let value = parseFloat(this.value);
+
+                if (value < 0) {
+                    this.value = 0;
+                }
+
+                if (value > 10) {
+                    this.value = 10;
+                }
+            });
+        }
+
+        /* DOB VALIDATION */
+        const dobInput = document.getElementById("date_of_birth");
+
+        if (dobInput) {
+            dobInput.addEventListener("input", function () {
+                this.value = this.value.replace(/\D/g, "").slice(0, 8);
+            });
+        }
+    </script>
+
+</body>
+</html>

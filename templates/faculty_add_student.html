@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="/static/favicon.png?v=3">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Add Student</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/sidebar-enhancements.css') }}"
+    >
+
+    <style>
+        /* Page-specific layout fixes: keep the form inside the content area at every sidebar state. */
+        .faculty-main {
+            min-width: 0;
+            width: auto;
+            box-sizing: border-box;
+        }
+
+        .faculty-page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .faculty-panel {
+            width: 100%;
+            max-width: 1100px;
+            box-sizing: border-box;
+            margin: 0 auto 24px;
+        }
+
+        .faculty-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px 28px;
+            align-items: start;
+        }
+
+        .faculty-form-group {
+            min-width: 0;
+        }
+
+        .faculty-form-group input,
+        .faculty-form-group select,
+        .faculty-form-group textarea {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .faculty-password-note {
+            margin-top: 22px;
+        }
+
+        .faculty-submit-btn {
+            margin-top: 18px;
+        }
+
+        @media (max-width: 760px) {
+            .faculty-form-grid {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 18px;
+            }
+
+            .faculty-page-header {
+                gap: 14px;
+            }
+
+            .faculty-panel {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body class="faculty-dashboard-body faculty-add-student-page">
+
+    <!-- ================= FACULTY SIDEBAR ================= -->
+    <aside class="faculty-sidebar" id="facultySidebar">
+
+        <!-- Logo and Collapse Button -->
+        <div class="faculty-sidebar-brand">
+            <img
+                src="{{ url_for('static', filename='images/logo.png') }}"
+                alt="Vel Tech Smart Placement Portal"
+            >
+
+            <button
+                class="sidebar-collapse-btn"
+                type="button"
+                data-sidebar-toggle="faculty"
+                aria-label="Collapse sidebar"
+                aria-expanded="true"
+                title="Collapse sidebar"
+            >
+                <i class="fa-solid fa-angles-left"></i>
+            </button>
+        </div>
+
+        <!-- Faculty Identity -->
+        <div class="faculty-identity">
+            <div class="faculty-avatar">
+                <i class="fa-solid fa-user-tie"></i>
+            </div>
+
+            <div class="faculty-identity-text">
+                <strong>
+                    {{ session.get('faculty_name', 'Faculty') }}
+                </strong>
+
+                <span>
+                    {{ session.get(
+                        'faculty_role',
+                        faculty_role if faculty_role is defined else 'Faculty'
+                    ) }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="faculty-nav" aria-label="Faculty navigation">
+
+            <!-- Dashboard -->
+            <a
+                href="{{ url_for('faculty_dashboard') }}"
+                class="faculty-nav-link {% if request.endpoint == 'faculty_dashboard' %}active{% endif %}"
+                title="Dashboard"
+            >
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <!-- Manage Group -->
+            <section class="sidebar-group {% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students', 'faculty_management'] %}is-open{% endif %}">
+
+                <button
+                    type="button"
+                    class="faculty-nav-link sidebar-group-toggle"
+                    aria-expanded="{% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students', 'faculty_management'] %}true{% else %}false{% endif %}"
+                    title="Manage"
+                >
+                    <i class="fa-solid fa-users-gear"></i>
+                    <span>Manage</span>
+                    <i class="fa-solid fa-chevron-down group-chevron"></i>
+                </button>
+
+                <div class="sidebar-submenu">
+                    <a
+                        href="{{ url_for('faculty_students') }}"
+                        class="faculty-nav-link {% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students'] %}active{% endif %}"
+                        title="Students"
+                    >
+                        <i class="fa-solid fa-users"></i>
+                        <span>Students</span>
+                    </a>
+
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a
+                        href="{{ url_for('faculty_management') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_management' %}active{% endif %}"
+                        title="Faculty Management"
+                    >
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Faculty Management</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Placement Group -->
+            <section class="sidebar-group {% if request.endpoint in ['faculty_companies', 'faculty_applications', 'faculty_selection', 'faculty_add_company', 'edit_company'] %}is-open{% endif %}">
+
+                <button
+                    type="button"
+                    class="faculty-nav-link sidebar-group-toggle"
+                    aria-expanded="{% if request.endpoint in ['faculty_companies', 'faculty_applications', 'faculty_selection', 'faculty_add_company', 'edit_company'] %}true{% else %}false{% endif %}"
+                    title="Placement"
+                >
+                    <i class="fa-solid fa-building"></i>
+                    <span>Placement</span>
+                    <i class="fa-solid fa-chevron-down group-chevron"></i>
+                </button>
+
+                <div class="sidebar-submenu">
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a
+                        href="{{ url_for('faculty_companies') }}"
+                        class="faculty-nav-link {% if request.endpoint in ['faculty_companies', 'faculty_add_company', 'edit_company'] %}active{% endif %}"
+                        title="Companies"
+                    >
+                        <i class="fa-solid fa-building"></i>
+                        <span>Companies</span>
+                    </a>
+                    {% endif %}
+
+                    <a
+                        href="{{ url_for('faculty_applications') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_applications' %}active{% endif %}"
+                        title="Applications"
+                    >
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span>Applications</span>
+                    </a>
+
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a
+                        href="{{ url_for('faculty_selection') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_selection' %}active{% endif %}"
+                        title="Selection"
+                    >
+                        <i class="fa-solid fa-user-check"></i>
+                        <span>Selection</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Notifications and Reports Group -->
+            <section class="sidebar-group {% if request.endpoint in ['faculty_notifications', 'faculty_send_announcement', 'faculty_reports'] %}is-open{% endif %}">
+
+                <button
+                    type="button"
+                    class="faculty-nav-link sidebar-group-toggle"
+                    aria-expanded="{% if request.endpoint in ['faculty_notifications', 'faculty_send_announcement', 'faculty_reports'] %}true{% else %}false{% endif %}"
+                    title="Notifications and Reports"
+                >
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Notifications</span>
+                    <i class="fa-solid fa-chevron-down group-chevron"></i>
+                </button>
+
+                <div class="sidebar-submenu">
+
+                    <!-- Received Messages -->
+                    <a
+                        href="{{ url_for('faculty_notifications') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_notifications' %}active{% endif %}"
+                        title="Received Messages"
+                    >
+                        <i class="fa-solid fa-inbox"></i>
+                        <span>Received Messages</span>
+
+                        {% if unread_notification_count > 0 %}
+                        <span class="notification-badge">
+                            {{ unread_notification_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    <!-- Send Announcements -->
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a
+                        href="{{ url_for('faculty_send_announcement') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_send_announcement' %}active{% endif %}"
+                        title="Send Announcements"
+                    >
+                        <i class="fa-solid fa-bullhorn"></i>
+                        <span>Send Announcements</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Reports -->
+            <a
+                href="{{ url_for('faculty_reports') }}"
+                class="faculty-nav-link {% if request.endpoint == 'faculty_reports' %}active{% endif %}"
+                title="Placement Reports"
+            >
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Reports</span>
+            </a>
+        </nav>
+
+        <!-- Bottom Navigation -->
+        <div class="faculty-sidebar-bottom">
+            <a
+                href="{{ url_for('faculty_my_profile') }}"
+                class="faculty-nav-link {% if request.endpoint == 'faculty_my_profile' %}active{% endif %}"
+                title="My Profile"
+            >
+                <i class="fa-solid fa-user"></i>
+                <span>My Profile</span>
+            </a>
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="faculty-nav-link faculty-logout"
+                title="Logout"
+            >
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="faculty-main">
+
+        <div class="faculty-page-header">
+            <div>
+                <p class="faculty-label">
+                    STUDENT MANAGEMENT
+                </p>
+
+                <h1>
+                    Add Student
+                </h1>
+
+                <p>
+                    Create an individual student account.
+                </p>
+            </div>
+
+            <a
+                href="{{ url_for('faculty_students') }}"
+                class="faculty-back-btn"
+            >
+                ← Students
+            </a>
+        </div>
+
+        <section class="faculty-panel">
+
+            <div class="faculty-panel-header">
+                <div>
+                    <h2>Add Student</h2>
+
+                    <p>
+                        Student password will be the date of birth initially.
+                    </p>
+                </div>
+            </div>
+
+            <form
+                method="POST"
+                class="faculty-form"
+            >
+                <div class="faculty-form-grid">
+
+                    <div class="faculty-form-group">
+                        <label for="register_number">
+                            Register Number
+                        </label>
+
+                        <input
+                            type="text"
+                            id="register_number"
+                            name="register_number"
+                            placeholder="Enter register number"
+                            required
+                        >
+                    </div>
+
+                    <div class="faculty-form-group">
+                        <label for="name">
+                            Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            placeholder="Enter student name"
+                            required
+                        >
+                    </div>
+
+                    <div class="faculty-form-group">
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="student@veltech.edu.in"
+                            required
+                        >
+                    </div>
+
+                    <div class="faculty-form-group">
+                        <label for="department">
+                            Department
+                        </label>
+
+                        <input
+                            type="text"
+                            id="department"
+                            name="department"
+                            placeholder="CSE / AI & DS / IT"
+                            required
+                        >
+                    </div>
+
+<div class="faculty-form-group">
+    <label for="admission_year">
+        Admission Year
+    </label>
+
+    <input
+        type="number"
+        id="admission_year"
+        name="admission_year"
+        min="2000"
+        max="{{ current_calendar_year }}"
+        placeholder="Enter admission year (e.g. 2023)"
+        required
+    >
+
+    <small class="faculty-field-hint">
+        Example: 2024 admission = 2024-2028 batch. Current year is calculated automatically.
+    </small>
+</div>
+
+                    <div class="faculty-form-group">
+                        <label for="cgpa">
+                            CGPA
+                        </label>
+
+                        <input
+                            type="number"
+                            id="cgpa"
+                            name="cgpa"
+                            step="0.01"
+                            min="0"
+                            max="10"
+                            placeholder="0.00 - 10.00"
+                            required
+                        >
+                    </div>
+
+                    <div class="faculty-form-group">
+                        <label for="date_of_birth">
+                            Date of Birth
+                        </label>
+
+                        <input
+                            type="text"
+                            id="date_of_birth"
+                            name="date_of_birth"
+                            placeholder="DDMMYYYY"
+                            maxlength="8"
+                            minlength="8"
+                            pattern="\d{8}"
+                            required
+                        >
+
+                        <small class="faculty-field-hint">
+                            Format: DDMMYYYY
+                        </small>
+                    </div>
+
+                </div>
+
+                <div class="faculty-password-note">
+                    <i class="fa-solid fa-lock"></i>
+
+                    <span>
+                        Initial password will be the student's date of birth.
+                    </span>
+                </div>
+
+                <button
+                    type="submit"
+                    class="faculty-submit-btn"
+                >
+                    <i class="fa-solid fa-user-plus"></i>
+                    Create Student Account
+                </button>
+            </form>
+        </section>
+
+        {% include "components/site_footer.html" %}
+
+    </main>
+
+    <script>
+        document.getElementById("date_of_birth")
+            .addEventListener("input", function () {
+                this.value = this.value
+                    .replace(/\D/g, "")
+                    .slice(0, 8);
+            });
+    </script>
+
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}" defer></script>
+</body>
+</html>

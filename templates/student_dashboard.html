@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon" type="image/png"
+      href="/static/favicon.png?v=3">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Student Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar-enhancements.css') }}">
+</head>
+
+
+<body class="student-dashboard-body">
+
+
+    <!-- Background Overlay -->
+
+    <div class="dashboard-overlay"></div>
+
+
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="student-sidebar">
+  <button class="student-sidebar-collapse-btn" type="button" data-sidebar-toggle="student"
+          aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar">
+    <i class="fa-solid fa-angles-left"></i>
+  </button>
+  <div class="sidebar-logo">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Smart Placement Portal">
+  </div>
+  <ul class="student-sidebar-nav">
+    <li class="{% if request.endpoint == 'student_dashboard' %}active{% endif %}">
+      <a href="{{ url_for('student_dashboard') }}"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+    </li>
+    <li class="{% if request.endpoint == 'student_profile' %}active{% endif %}">
+      <a href="{{ url_for('student_profile') }}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>
+    </li>
+    <li class="{% if request.endpoint in ['job_opportunities', 'company_details'] %}active{% endif %}">
+      <a href="{{ url_for('job_opportunities') }}"><i class="fa-solid fa-briefcase"></i><span>Job Opportunities</span></a>
+    </li>
+    <li class="{% if request.endpoint == 'student_applications' %}active{% endif %}">
+      <a href="{{ url_for('student_applications') }}"><i class="fa-solid fa-file-lines"></i><span>My Applications</span></a>
+    </li>
+    <li class="{% if request.endpoint == 'student_resume' %}active{% endif %}">
+      <a href="{{ url_for('student_resume') }}"><i class="fa-solid fa-file-arrow-up"></i><span>Resume</span></a>
+    </li>
+<li class="{% if request.endpoint == 'student_notifications' %}active{% endif %}">
+    <a href="{{ url_for('student_notifications') }}">
+        <i class="fa-solid fa-bell"></i>
+        <span>Notifications</span>
+
+        {% if unread_notification_count > 0 %}
+            <span class="notification-badge">
+                {{ unread_notification_count }}
+            </span>
+        {% endif %}
+    </a>
+</li>
+    <li class="student-sidebar-logout"><a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a></li>
+  </ul>
+</aside>
+
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="student-main">
+
+
+
+        <!-- ================= TOP BAR ================= -->
+
+        <header class="dashboard-topbar">
+
+
+            <!-- Student Information -->
+
+            <div class="student-info">
+
+
+                <p class="greeting" id="greetingMessage">
+    Good Evening...
+</p>
+
+<script>
+    function updateGreeting() {
+        const hour = new Date().getHours();
+        let greeting;
+
+        if (hour >= 5 && hour < 12) {
+            greeting = "GOOD MORNING";
+        } else if (hour >= 12 && hour < 17) {
+            greeting = "GOOD AFTERNOON";
+        } else if (hour >= 17 && hour < 21) {
+            greeting = "GOOD EVENING";
+        } else {
+            greeting = "GOOD NIGHT";
+        }
+
+        document.getElementById("greetingMessage").textContent = greeting;
+    }
+
+    updateGreeting();
+</script>
+
+
+                <h2>
+
+                    {{ student['name'] }}
+
+                </h2>
+
+
+                <span>
+
+                    {{ student['department'] }}
+
+                    |
+
+                    Year {{ current_year_label }} | Batch {{ batch }}
+
+                </span>
+
+
+            </div>
+
+
+
+            <!-- Register Number -->
+
+            <div class="student-id">
+
+
+                <div class="register-badge">
+
+
+                    <i class="fa-solid fa-id-card"></i>
+
+
+                    <div>
+
+
+                        <small>
+
+                            Register Number
+
+                        </small>
+
+
+                        <h3>
+
+                            {{ student['register_number'] }}
+
+                        </h3>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </header>
+
+
+
+        <!-- ================= DASHBOARD CARDS ================= -->
+
+        <section class="dashboard-cards">
+
+
+
+            <!-- Applied Jobs -->
+
+            <div class="dashboard-card">
+
+
+                <h3>
+
+                    Applied Jobs
+
+                </h3>
+
+
+                <p>
+
+                    {{ applied_jobs }}
+
+                </p>
+
+
+            </div>
+
+
+
+            <!-- Upcoming Drives -->
+
+            <div class="dashboard-card">
+
+
+                <h3>
+
+                    Upcoming Drives
+
+                </h3>
+
+
+                <p>
+
+                    {{ upcoming_drives }}
+
+                </p>
+
+
+            </div>
+
+
+
+           <div class="dashboard-card">
+
+    <h3>Resume Status</h3>
+
+    {% if student['resume_path'] %}
+
+        <p>Uploaded</p>
+
+    {% else %}
+
+        <p>Not Uploaded</p>
+
+    {% endif %}
+
+</div>
+
+            <!-- Notifications -->
+
+            <!-- Leave this unchanged for now -->
+
+            <div class="dashboard-card">
+
+
+                <h3>
+
+                    Notifications
+
+                </h3>
+
+
+                <p>
+
+                    {{ student_unread_notifications }}
+
+                </p>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- ================= PLACEMENT DRIVES ================= -->
+
+        <section class="dashboard-content">
+
+
+            <h2>
+
+                Available Placement Drives
+
+            </h2>
+
+
+
+            <table class="company-table">
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>Company</th>
+
+                        <th>Role</th>
+
+                        <th>Package</th>
+
+                        <th>Location</th>
+
+                        <th>Deadline</th>
+
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+
+
+                <tbody>
+
+
+                    {% for company in companies %}
+
+
+                    <tr>
+
+
+                        <td>
+
+                            {{ company['company_name'] }}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ company['job_role'] }}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ company['package'] }} LPA
+
+                        </td>
+
+
+                        <td>
+
+                            {{ company['location'] }}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ company['application_deadline'] }}
+
+                        </td>
+
+
+                        <td>
+
+
+                            <a
+                                href="{{ url_for(
+                                    'company_details',
+                                    company_id=company['company_id']
+                                ) }}"
+                                class="details-btn">
+
+                                View Details
+
+                            </a>
+
+
+                        </td>
+
+
+                    </tr>
+
+
+                    {% endfor %}
+
+
+                </tbody>
+
+
+            </table>
+
+
+
+            <!-- Notice -->
+
+            <div class="notice-bar">
+
+
+                <marquee
+                    behavior="scroll"
+                    direction="left"
+                    scrollamount="6">
+
+                    Notice: Location, Package, eligibility criteria and
+                    interview process may change based on company
+                    requirements. Please check the official placement
+                    notification before applying.
+
+                </marquee>
+
+
+            </div>
+
+
+        </section>
+
+
+{% include "components/site_footer.html" %}
+    </main>
+
+
+<script src="{{ url_for('static', filename='js/sidebar.js') }}" defer></script>
+</body>
+</html>

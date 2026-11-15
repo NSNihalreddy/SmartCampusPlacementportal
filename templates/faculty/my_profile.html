@@ -1,0 +1,374 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png"
+      href="/static/favicon.png?v=3">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | Smart Campus Placement Portal</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/sidebar-enhancements.css') }}">
+</head>
+
+<body class="faculty-dashboard-body">
+
+<aside class="faculty-sidebar" id="facultySidebar">
+    <div class="faculty-sidebar-brand">
+        <img src="{{ url_for('static', filename='images/logo.png') }}"
+             alt="Vel Tech Smart Placement Portal">
+        <button class="sidebar-collapse-btn" type="button"
+                data-sidebar-toggle="faculty"
+                aria-label="Collapse sidebar" aria-expanded="true"
+                title="Collapse sidebar">
+            <i class="fa-solid fa-angles-left"></i>
+        </button>
+    </div>
+
+    <div class="faculty-identity">
+        <div class="faculty-avatar">
+            <i class="fa-solid fa-user-tie"></i>
+        </div>
+        <div class="faculty-identity-text">
+            <strong>{{ faculty['name'] }}</strong>
+            <span>{{ faculty['role'] }}</span>
+        </div>
+    </div>
+
+    <nav class="faculty-nav" aria-label="Faculty navigation">
+        <a href="{{ url_for('faculty_dashboard') }}" class="faculty-nav-link">
+            <i class="fa-solid fa-house"></i><span>Dashboard</span>
+        </a>
+
+        <section class="sidebar-group">
+            <button type="button" class="faculty-nav-link sidebar-group-toggle"
+                    aria-expanded="false">
+                <i class="fa-solid fa-users-gear"></i>
+                <span>Manage</span>
+                <i class="fa-solid fa-chevron-down group-chevron"></i>
+            </button>
+            <div class="sidebar-submenu">
+                <a href="{{ url_for('faculty_students') }}" class="faculty-nav-link">
+                    <i class="fa-solid fa-users"></i><span>Students</span>
+                </a>
+                {% if faculty['role'] in ['Dean', 'HOD'] %}
+                <a href="{{ url_for('faculty_management') }}" class="faculty-nav-link">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span>Faculty Management</span>
+                </a>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="sidebar-group">
+            <button type="button" class="faculty-nav-link sidebar-group-toggle"
+                    aria-expanded="false">
+                <i class="fa-solid fa-building"></i>
+                <span>Placement</span>
+                <i class="fa-solid fa-chevron-down group-chevron"></i>
+            </button>
+            <div class="sidebar-submenu">
+                {% if faculty['role'] in ['Dean', 'HOD'] %}
+                <a href="{{ url_for('faculty_companies') }}" class="faculty-nav-link">
+                    <i class="fa-solid fa-building"></i><span>Companies</span>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('faculty_applications') }}" class="faculty-nav-link">
+                    <i class="fa-solid fa-file-lines"></i><span>Applications</span>
+                </a>
+                {% if faculty['role'] in ['Dean', 'HOD'] %}
+                <a href="{{ url_for('faculty_selection') }}" class="faculty-nav-link">
+                    <i class="fa-solid fa-user-check"></i><span>Selection</span>
+                </a>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="sidebar-group">
+            <button type="button" class="faculty-nav-link sidebar-group-toggle"
+                    aria-expanded="false">
+                <i class="fa-solid fa-bell"></i>
+                <span>Notifications</span>
+                <i class="fa-solid fa-chevron-down group-chevron"></i>
+            </button>
+            <div class="sidebar-submenu">
+                <a href="{{ url_for('faculty_notifications') }}" class="faculty-nav-link">
+                    <i class="fa-solid fa-inbox"></i><span>Received Messages</span>
+                </a>
+                {% if faculty['role'] in ['Dean', 'HOD'] %}
+                <a href="{{ url_for('faculty_send_announcement') }}" class="faculty-nav-link">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <span>Send Announcements</span>
+                </a>
+                {% endif %}
+            </div>
+            <a href="{{ url_for('faculty_reports') }}"
+       class="faculty-nav-link {% if request.endpoint == 'faculty_reports' %}active{% endif %}"
+       title="Placement Reports">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Reports</span>
+    </a>
+        </section>
+    </nav>
+
+    <div class="faculty-sidebar-bottom">
+        <a href="{{ url_for('faculty_my_profile') }}"
+           class="faculty-nav-link active">
+            <i class="fa-solid fa-user"></i><span>My Profile</span>
+        </a>
+        <a href="{{ url_for('logout') }}"
+           class="faculty-nav-link faculty-logout">
+            <i class="fa-solid fa-right-from-bracket"></i><span>Logout</span>
+        </a>
+    </div>
+</aside>
+
+<main class="faculty-main">
+
+    <header class="faculty-topbar">
+        <div>
+            <p class="faculty-label">PLACEMENT PORTAL</p>
+            <h1>My Profile</h1>
+            <p class="faculty-subtitle">
+                Manage your account and personal information.
+            </p>
+        </div>
+
+        <div class="faculty-role-badge">
+            <i class="fa-solid fa-user-tie"></i>
+            <div>
+                <small>Logged in as</small>
+                <strong>{{ faculty['role'] }}</strong>
+            </div>
+        </div>
+    </header>
+
+    <section class="profile-container">
+
+        <div class="profile-heading">
+            <div class="profile-avatar">
+                <i class="fa-solid fa-user-tie"></i>
+            </div>
+
+            <div>
+                <h2>{{ faculty['name'] }}</h2>
+                <p>{{ faculty['role'] }} · {{ faculty['tts_number'] }}</p>
+            </div>
+
+            <div class="profile-settings">
+                <button type="button" id="settingsBtn"
+                        class="profile-settings-btn"
+                        aria-expanded="false">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+
+                <div id="settingsMenu" class="profile-settings-menu" hidden>
+                    <button type="button" id="editProfileBtn">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        Edit Profile
+                    </button>
+                    <button type="button" id="openPasswordBtn">
+                        <i class="fa-solid fa-lock"></i>
+                        Change Password
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="profile-messages">
+                    {% for category, message in messages %}
+                        <div class="profile-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="profile-form">
+            <h3 class="profile-section-title">Personal Information</h3>
+            <p class="profile-section-description">
+                View and update your account details.
+            </p>
+
+            <div class="profile-field">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name"
+                       value="{{ faculty['name'] }}" readonly required>
+            </div>
+
+            <div class="profile-field">
+                <label for="tts_number">TTS Number</label>
+                <input type="text" id="tts_number"
+                       value="{{ faculty['tts_number'] }}" readonly>
+            </div>
+
+            <div class="profile-field">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email"
+                       value="{{ faculty['email'] }}" readonly required>
+            </div>
+
+            <div class="profile-field">
+                <label for="role">Role</label>
+                <input type="text" id="role"
+                       value="{{ faculty['role'] }}" readonly>
+            </div>
+
+            <div class="profile-field">
+                <label for="date_of_birth">Date of Birth</label>
+                <input type="text" id="date_of_birth"
+                       value="{{ faculty['date_of_birth'] }}" readonly>
+            </div>
+
+            <div class="profile-form-actions" id="profileFormActions" hidden>
+                <button type="submit" class="profile-save-btn">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Save Changes
+                </button>
+                <button type="button" class="profile-cancel-btn" id="cancelEditBtn">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </section>
+    {% include "components/site_footer.html" %}
+</main>
+
+<!-- Change Password Modal -->
+<div id="passwordModal" class="profile-modal" hidden>
+    <div class="profile-modal-backdrop" id="passwordBackdrop"></div>
+
+    <section class="profile-modal-card"
+             role="dialog" aria-modal="true"
+             aria-labelledby="passwordModalTitle">
+
+        <div class="profile-modal-header">
+            <div>
+                <h2 id="passwordModalTitle">Change Password</h2>
+                <p>Update your account password securely.</p>
+            </div>
+            <button type="button" id="closePasswordBtn"
+                    class="profile-modal-close" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="POST" class="password-form">
+            <div class="profile-field">
+                <label for="current_password">Current Password</label>
+                <input type="password" id="current_password"
+                       name="current_password"
+                       autocomplete="current-password">
+            </div>
+
+            <div class="profile-field">
+                <label for="new_password">New Password</label>
+                <input type="password" id="new_password"
+                       name="new_password"
+                       autocomplete="new-password">
+            </div>
+
+            <div class="profile-field">
+                <label for="confirm_password">Confirm New Password</label>
+                <input type="password" id="confirm_password"
+                       name="confirm_password"
+                       autocomplete="new-password">
+            </div>
+
+            <div class="profile-modal-actions">
+                <button type="button" id="cancelPasswordBtn"
+                        class="profile-cancel-btn">Cancel</button>
+                <button type="submit" class="profile-save-btn">
+                    Update Password
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script src="{{ url_for('static', filename='js/sidebar.js') }}" defer></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const settingsBtn = document.getElementById("settingsBtn");
+    const settingsMenu = document.getElementById("settingsMenu");
+    const modal = document.getElementById("passwordModal");
+    const editProfileBtn = document.getElementById("editProfileBtn");
+    const cancelEditBtn = document.getElementById("cancelEditBtn");
+    const profileFormActions = document.getElementById("profileFormActions");
+    const nameInput = document.getElementById("name");
+    const emailInput = document.getElementById("email");
+    const originalName = nameInput.value;
+    const originalEmail = emailInput.value;
+
+    function closeSettings() {
+        settingsMenu.hidden = true;
+        settingsBtn.setAttribute("aria-expanded", "false");
+    }
+
+    function closeModal() {
+        modal.hidden = true;
+    }
+
+    settingsBtn.addEventListener("click", function (event) {
+        event.stopPropagation();
+        settingsMenu.hidden = !settingsMenu.hidden;
+        settingsBtn.setAttribute(
+            "aria-expanded",
+            String(!settingsMenu.hidden)
+        );
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!event.target.closest(".profile-settings")) {
+            closeSettings();
+        }
+    });
+
+    editProfileBtn.addEventListener("click", function () {
+        closeSettings();
+        nameInput.readOnly = false;
+        emailInput.readOnly = false;
+        profileFormActions.hidden = false;
+        nameInput.focus();
+    });
+
+    cancelEditBtn.addEventListener("click", function () {
+        nameInput.value = originalName;
+        emailInput.value = originalEmail;
+        nameInput.readOnly = true;
+        emailInput.readOnly = true;
+        profileFormActions.hidden = true;
+    });
+
+    document.getElementById("openPasswordBtn").addEventListener("click", function () {
+        closeSettings();
+        modal.hidden = false;
+        document.getElementById("current_password").focus();
+    });
+
+    document.getElementById("closePasswordBtn").addEventListener("click", closeModal);
+    document.getElementById("cancelPasswordBtn").addEventListener("click", closeModal);
+    document.getElementById("passwordBackdrop").addEventListener("click", closeModal);
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeSettings();
+            closeModal();
+        }
+    });
+});
+</script>
+
+</body>
+</html>

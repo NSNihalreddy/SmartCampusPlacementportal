@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon" type="image/png" href="/static/favicon.png?v=3">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Company Details</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        /* PLACEMENT RESTRICTION POPUP */
+
+        .restriction-popup {
+            text-align: center;
+            max-width: 520px;
+        }
+
+        .restriction-icon {
+            width: 65px;
+            height: 65px;
+            margin: 5px auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(220, 80, 80, 0.12);
+            border: 1px solid rgba(220, 80, 80, 0.30);
+            color: #ff7070;
+            font-size: 28px;
+        }
+
+        .restriction-popup h2 {
+            margin-bottom: 18px;
+            color: #ffffff;
+            font-size: 24px;
+        }
+
+        .restriction-popup p {
+            color: #c7d1db;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .restriction-period {
+            color: #A9BDD2 !important;
+            font-weight: 600;
+        }
+
+        .restriction-reason {
+            padding: 12px 15px;
+            margin-top: 15px !important;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #dddddd !important;
+        }
+
+        .restriction-help {
+            color: #ffb3b3 !important;
+            font-weight: 600;
+        }
+
+        .restriction-popup .popup-actions {
+            margin-top: 25px;
+        }
+
+        .restriction-popup .popup-apply-btn {
+            min-width: 120px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="company-page">
+
+    <div class="company-container">
+
+        <!-- BACK -->
+        <a href="/student/dashboard" class="back-btn">
+            ← Back to Dashboard
+        </a>
+
+        <!-- COMPANY HEADER -->
+        <div class="company-header">
+            <h1>{{ company['company_name'] }}</h1>
+            <h3>{{ company['job_role'] }}</h3>
+        </div>
+
+        <!-- COMPANY INFORMATION -->
+        <div class="company-grid">
+
+            <!-- Job Information -->
+            <div class="info-card">
+                <h2>
+                    <i class="fa-solid fa-briefcase"></i>
+                    Job Information
+                </h2>
+
+                <p>
+                    <strong>Package:</strong>
+                    {{ company['package'] }} LPA
+                </p>
+
+                <p>
+                    <strong>Location:</strong>
+                    {{ company['location'] }}
+                </p>
+
+                <p>
+                    <strong>Deadline:</strong>
+                    {{ company['application_deadline'] }}
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+                    <span class="status-open">
+                        <i class="fa-solid fa-circle"></i>
+                        Open
+                    </span>
+                </p>
+            </div>
+
+            <!-- Eligibility -->
+            <div class="info-card">
+                <h2>
+                    <i class="fa-solid fa-circle-check"></i>
+                    Eligibility
+                </h2>
+
+                <p>
+                    <strong>Minimum CGPA:</strong>
+                    {{ company['cgpa_required'] }}
+                </p>
+
+                <p>
+                    <strong>Departments:</strong>
+                    {{ company['eligible_departments'] }}
+                </p>
+
+                <p>
+                    <strong>Eligible Passing-out Batches:</strong>
+                    {% if batch_restriction_configured %}
+                        {{ eligible_batches_label }}
+                    {% else %}
+                        No batch restriction configured
+                    {% endif %}
+                </p>
+
+                {% if batch_restriction_configured and not batch_eligible %}
+                    <p class="not-eligible-message">
+                        This placement is available only for passing-out batches:
+                        {{ eligible_batches_label }}.
+                        {% if passing_out_year %}
+                            Your passing-out batch is {{ passing_out_year }}.
+                        {% else %}
+                            Your passing-out batch is not assigned in your profile.
+                        {% endif %}
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Skills -->
+            <div class="info-card">
+                <h2>
+                    <i class="fa-solid fa-laptop-code"></i>
+                    Skills Required
+                </h2>
+
+                <p>{{ company['skills_required'] }}</p>
+            </div>
+
+            <!-- Description -->
+            <div class="info-card">
+                <h2>
+                    <i class="fa-solid fa-file-lines"></i>
+                    Job Description
+                </h2>
+
+                <p>{{ company['description'] }}</p>
+            </div>
+
+            <!-- Selection Process -->
+            <div class="info-card">
+                <h2>
+                    <i class="fa-solid fa-list-check"></i>
+                    Selection Process
+                </h2>
+
+                <ol>
+                    <li>Resume Screening</li>
+                    <li>Aptitude Test</li>
+                    <li>Technical Interview</li>
+                    <li>HR Interview</li>
+                </ol>
+            </div>
+
+            <!-- Important Instructions -->
+            <div class="info-card">
+                <h2>
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    Important Instructions
+                </h2>
+
+                <ul>
+                    <li>
+                        Package and location may vary depending
+                        on company requirements.
+                    </li>
+                    <li>
+                        Read all eligibility criteria carefully
+                        before applying.
+                    </li>
+                    <li>
+                        Applications cannot be edited after submission.
+                    </li>
+                    <li>
+                        Keep your resume updated before applying.
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- RESUME ANALYSIS BUTTON -->
+        <div class="resume-analysis-trigger">
+            <button type="button"
+                    class="resume-analysis-btn"
+                    onclick="toggleResumeAnalysis()">
+
+                <i class="fa-solid fa-chart-line"></i>
+
+                <span>Resume Analysis</span>
+            </button>
+        </div>
+
+        <!-- RESUME ANALYSIS -->
+        <div id="resumeAnalysis"
+             class="resume-analysis-card"
+             style="display: none;">
+
+            <h2>
+                <i class="fa-solid fa-chart-line"></i>
+                Resume Analysis
+            </h2>
+
+            <h3>Your Resume Match Score</h3>
+
+            <div class="score-circle"
+                 style="--score: {{ resume_score }};">
+
+                <span>{{ resume_score }}%</span>
+            </div>
+
+            <p class="match-level">
+                {{ match_level }}
+            </p>
+
+            {% if not batch_eligible %}
+
+                <p class="not-eligible-message">
+                    You cannot apply because your passing-out batch is not eligible.
+                </p>
+
+            {% elif resume_score < 40 %}
+
+                <p class="resume-not-match">
+                    Your skills don't match the job requirements.
+                </p>
+
+            {% elif not eligible_to_apply %}
+
+                <p class="not-eligible-message">
+                    You are not eligible to apply.
+                </p>
+
+            {% else %}
+
+                <div class="apply-section">
+                    <button type="button"
+                            class="apply-btn"
+                            onclick="openApplyPopup()">
+                        Apply Now
+                    </button>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+        <!-- APPLICATION POPUP -->
+        <div id="applyPopup"
+             class="apply-popup-overlay"
+             style="display: none;">
+
+            <div class="apply-popup">
+
+                <button type="button"
+                        class="popup-close"
+                        onclick="closeApplyPopup()">
+                    ×
+                </button>
+
+                <!-- Confirmation -->
+                <div id="applicationConfirmation">
+
+                    <div class="popup-icon">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+
+                    <h2>
+                        Do you want to apply for this job?
+                    </h2>
+
+                    <div class="popup-actions">
+                        <button type="button"
+                                class="popup-apply-btn"
+                                onclick="confirmApplication()">
+                            Apply
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Application Result -->
+                <div id="applicationResult"
+                     style="display: none;">
+
+                    <div id="applicationResultIcon"
+                         class="application-result-icon">
+
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+
+                    <h2 id="applicationResultTitle">
+                        Application Submitted Successfully
+                    </h2>
+
+                    <p id="applicationResultMessage">
+                        Your application has been received successfully.
+                    </p>
+
+                    <button type="button"
+                            class="result-dashboard-btn"
+                            onclick="goToDashboard()">
+
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Return to Dashboard
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RESTRICTION POPUP -->
+        <div id="restrictionPopup"
+             class="apply-popup-overlay"
+             style="display: none;">
+
+            <div class="apply-popup restriction-popup">
+
+                <button type="button"
+                        class="popup-close"
+                        onclick="closeRestrictionPopup()">
+                    ×
+                </button>
+
+                <div class="restriction-icon">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
+
+                <h2 id="restrictionTitle">
+                    Placement Application Blocked
+                </h2>
+
+                <p id="restrictionMessage"></p>
+
+                <p id="restrictionPeriod"
+                   class="restriction-period">
+                </p>
+
+                <p id="restrictionReason"
+                   class="restriction-reason">
+                </p>
+
+                <p class="restriction-help">
+                    Please meet the Placement Department
+                    to know the details of this restriction.
+                </p>
+
+                <div class="popup-actions">
+                    <button type="button"
+                            class="popup-apply-btn"
+                            onclick="closeRestrictionPopup()">
+                        OK
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SHARED FOOTER -->
+    {% include "components/site_footer.html" %}
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   RESUME ANALYSIS
+   ========================================================= */
+
+function toggleResumeAnalysis() {
+
+    const analysis =
+        document.getElementById("resumeAnalysis");
+
+    const button =
+        document.querySelector(".resume-analysis-btn");
+
+    const buttonText =
+        button.querySelector("span");
+
+    if (analysis.style.display === "none") {
+
+        analysis.style.display = "block";
+
+        buttonText.textContent =
+            "Hide Resume Analysis";
+
+    } else {
+
+        analysis.style.display = "none";
+
+        buttonText.textContent =
+            "Resume Analysis";
+    }
+}
+
+
+/* =========================================================
+   OPEN APPLICATION POPUP
+   ========================================================= */
+
+function openApplyPopup() {
+
+    document.getElementById(
+        "applyPopup"
+    ).style.display = "flex";
+}
+
+
+/* =========================================================
+   CLOSE APPLICATION POPUP
+   ========================================================= */
+
+function closeApplyPopup() {
+
+    document.getElementById(
+        "applyPopup"
+    ).style.display = "none";
+}
+
+
+/* =========================================================
+   CONFIRM APPLICATION
+   ========================================================= */
+
+function confirmApplication() {
+
+    const applyButton =
+        document.querySelector(
+            "#applicationConfirmation .popup-apply-btn"
+        );
+
+    applyButton.innerHTML = "Applying...";
+    applyButton.disabled = true;
+
+    fetch("{{ url_for('apply_company', company_id=company['company_id']) }}")
+
+    .then(async response => {
+
+        const data = await response.json();
+
+        return data;
+    })
+
+    .then(data => {
+
+        /* PLACEMENT RESTRICTION */
+
+        if (data.restricted) {
+
+            applyButton.innerHTML = "Apply";
+            applyButton.disabled = false;
+
+            closeApplyPopup();
+
+            openRestrictionPopup(
+                data.message,
+                data.restriction_type,
+                data.start_date,
+                data.end_date,
+                data.reason
+            );
+
+            return;
+        }
+
+        /* ALREADY APPLIED */
+
+        if (data.already_applied) {
+
+            applyButton.innerHTML = "Apply";
+            applyButton.disabled = false;
+
+            showApplicationResult(false);
+
+            return;
+        }
+
+        /* NOT ELIGIBLE */
+
+        if (data.eligible === false) {
+
+            applyButton.innerHTML = "Apply";
+            applyButton.disabled = false;
+
+            closeApplyPopup();
+
+            alert(
+                data.message ||
+                "You are not eligible to apply for this placement."
+            );
+
+            return;
+        }
+
+        /* SUCCESS */
+
+        if (data.success) {
+
+            applyButton.innerHTML = "Applied";
+            applyButton.disabled = true;
+
+            showApplicationResult(true);
+
+            return;
+        }
+
+        /* UNKNOWN RESPONSE */
+
+        applyButton.innerHTML = "Apply";
+        applyButton.disabled = false;
+
+        closeApplyPopup();
+
+        alert(
+            data.message ||
+            "Something went wrong while submitting your application."
+        );
+
+    })
+
+    .catch(error => {
+
+        console.error("Application error:", error);
+
+        applyButton.innerHTML = "Apply";
+        applyButton.disabled = false;
+
+        closeApplyPopup();
+
+        alert(
+            "Unable to submit the application. Please try again."
+        );
+    });
+}
+
+
+/* =========================================================
+   SHOW APPLICATION RESULT
+   ========================================================= */
+
+function showApplicationResult(success) {
+
+    const confirmation =
+        document.getElementById(
+            "applicationConfirmation"
+        );
+
+    const result =
+        document.getElementById(
+            "applicationResult"
+        );
+
+    const title =
+        document.getElementById(
+            "applicationResultTitle"
+        );
+
+    const message =
+        document.getElementById(
+            "applicationResultMessage"
+        );
+
+    const iconContainer =
+        document.getElementById(
+            "applicationResultIcon"
+        );
+
+    confirmation.style.display = "none";
+    result.style.display = "block";
+
+    if (success) {
+
+        iconContainer.className =
+            "application-result-icon success-result";
+
+        iconContainer.innerHTML =
+            '<i class="fa-solid fa-circle-check"></i>';
+
+        title.textContent =
+            "Application Submitted Successfully";
+
+        message.textContent =
+            "Your application has been received successfully.";
+
+    } else {
+
+        iconContainer.className =
+            "application-result-icon already-result";
+
+        iconContainer.innerHTML =
+            '<i class="fa-solid fa-circle-info"></i>';
+
+        title.textContent =
+            "Application Already Submitted";
+
+        message.textContent =
+            "You have already applied for this placement drive.";
+    }
+}
+
+
+/* =========================================================
+   GO TO DASHBOARD
+   ========================================================= */
+
+function goToDashboard() {
+
+    window.location.href =
+        "/student/dashboard";
+}
+
+
+/* =========================================================
+   OPEN RESTRICTION POPUP
+   ========================================================= */
+
+function openRestrictionPopup(
+    message,
+    restrictionType,
+    startDate,
+    endDate,
+    reason
+) {
+
+    const popup =
+        document.getElementById(
+            "restrictionPopup"
+        );
+
+    const title =
+        document.getElementById(
+            "restrictionTitle"
+        );
+
+    const messageBox =
+        document.getElementById(
+            "restrictionMessage"
+        );
+
+    const period =
+        document.getElementById(
+            "restrictionPeriod"
+        );
+
+    const reasonBox =
+        document.getElementById(
+            "restrictionReason"
+        );
+
+    /* PERMANENT */
+
+    if (restrictionType === "Permanent") {
+
+        title.textContent =
+            "Placement Application Blocked";
+
+        period.innerHTML = "";
+
+    }
+
+    /* TEMPORARY */
+
+    else {
+
+        title.textContent =
+            "Placement Application Temporarily Blocked";
+
+        period.innerHTML =
+            "<strong>Restriction Period:</strong> " +
+            startDate +
+            " → " +
+            endDate;
+    }
+
+    messageBox.textContent =
+        "You are currently blocked from applying for placement opportunities.";
+
+    reasonBox.innerHTML =
+        "<strong>Reason:</strong> " +
+        reason;
+
+    popup.style.display = "flex";
+}
+
+
+/* =========================================================
+   CLOSE RESTRICTION POPUP
+   ========================================================= */
+
+function closeRestrictionPopup() {
+
+    document.getElementById(
+        "restrictionPopup"
+    ).style.display = "none";
+}
+
+
+/* =========================================================
+   CLOSE POPUPS WHEN CLICKING OUTSIDE
+   ========================================================= */
+
+window.addEventListener(
+    "click",
+    function(event) {
+
+        const applyPopup =
+            document.getElementById(
+                "applyPopup"
+            );
+
+        const restrictionPopup =
+            document.getElementById(
+                "restrictionPopup"
+            );
+
+        if (event.target === applyPopup) {
+            closeApplyPopup();
+        }
+
+        if (event.target === restrictionPopup) {
+            closeRestrictionPopup();
+        }
+
+    }
+);
+
+</script>
+
+</body>
+</html>

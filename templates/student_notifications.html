@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Notifications</title>
+
+    <link rel="icon" type="image/png"
+          href="{{ url_for('static', filename='favicon.png') }}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/sidebar-enhancements.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/notifications-pages.css') }}">
+
+    <style>
+        .sidebar-unread-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 19px;
+            height: 19px;
+            padding: 0 5px;
+            border-radius: 999px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1;
+            margin-left: auto;
+            box-shadow: 0 0 0 2px rgba(25, 20, 25, .85);
+        }
+
+        .student-sidebar-nav li,
+        .student-sidebar-nav li a {
+            position: relative;
+        }
+
+        .student-sidebar-nav .sidebar-unread-badge {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+        }
+
+        .student-sidebar.is-collapsed .sidebar-unread-badge,
+        .student-sidebar.collapsed .sidebar-unread-badge {
+            position: absolute;
+            top: 3px;
+            right: 5px;
+            margin: 0;
+            transform: none;
+        }
+    </style>
+</head>
+
+<body class="notification-student-page student-dashboard-body">
+
+    <!-- Student Sidebar -->
+    <aside class="student-sidebar">
+
+        <button class="student-sidebar-collapse-btn"
+                type="button"
+                data-sidebar-toggle="student"
+                aria-label="Collapse sidebar"
+                aria-expanded="true"
+                title="Collapse sidebar">
+            <i class="fa-solid fa-angles-left"></i>
+        </button>
+
+        <div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}"
+                 alt="Smart Placement Portal">
+        </div>
+
+        <ul class="student-sidebar-nav">
+
+            <li class="{% if request.endpoint == 'student_dashboard' %}active{% endif %}">
+                <a href="{{ url_for('student_dashboard') }}">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li class="{% if request.endpoint == 'student_profile' %}active{% endif %}">
+                <a href="{{ url_for('student_profile') }}">
+                    <i class="fa-solid fa-user"></i>
+                    <span>My Profile</span>
+                </a>
+            </li>
+
+            <li class="{% if request.endpoint in ['job_opportunities', 'company_details'] %}active{% endif %}">
+                <a href="{{ url_for('job_opportunities') }}">
+                    <i class="fa-solid fa-briefcase"></i>
+                    <span>Job Opportunities</span>
+                </a>
+            </li>
+
+            <li class="{% if request.endpoint == 'student_applications' %}active{% endif %}">
+                <a href="{{ url_for('student_applications') }}">
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span>My Applications</span>
+                </a>
+            </li>
+
+            <li class="{% if request.endpoint == 'student_resume' %}active{% endif %}">
+                <a href="{{ url_for('student_resume') }}">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                    <span>Resume</span>
+                </a>
+            </li>
+
+            <li class="{% if request.endpoint == 'student_notifications' %}active{% endif %}">
+                <a href="{{ url_for('student_notifications') }}">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Notifications</span>
+
+                    {% if student_unread_notifications %}
+                        <span class="sidebar-unread-badge"
+                              aria-label="{{ student_unread_notifications }} unread notifications">
+                            {{ student_unread_notifications if student_unread_notifications < 100 else '99+' }}
+                        </span>
+                    {% endif %}
+                </a>
+            </li>
+
+            <li class="student-sidebar-logout">
+                <a href="{{ url_for('logout') }}">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="student-main">
+
+        <div class="notification-content">
+            <main class="wrap">
+
+                <div class="top">
+                    <div>
+                        <h1>My Notifications</h1>
+                        <div class="muted">
+                            Placement updates and announcements addressed to you.
+                        </div>
+                    </div>
+
+                    <a class="btn secondary"
+                       href="{{ url_for('student_dashboard') }}">
+                        Back to dashboard
+                    </a>
+                </div>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% for category, message in messages %}
+                        <div class="flash">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endwith %}
+
+                <!-- Notifications -->
+                {% if notifications %}
+
+                    {% for n in notifications %}
+
+                        <section class="card {% if not n['is_read'] %}unread{% endif %}">
+
+                            <div class="top">
+                                <strong>{{ n['title'] }}</strong>
+
+                                <span class="muted">
+                                    {{ n['created_at']|ist_datetime }}
+                                    ·
+                                    {% if n['is_read'] %}
+                                        Read
+                                    {% else %}
+                                        Unread
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <p>{{ n['message'] }}</p>
+
+                            {% if n['related_url'] %}
+                                <p>
+                                    <a href="{{ n['related_url'] }}">
+                                        View related page
+                                    </a>
+                                </p>
+                            {% endif %}
+
+                            {% if not n['is_read'] %}
+                                <form class="inline"
+                                      method="post"
+                                      action="{{ url_for('mark_student_notification_read', notification_id=n['notification_id']) }}">
+
+                                    <button class="btn" type="submit">
+                                        Mark as read
+                                    </button>
+
+                                </form>
+                            {% endif %}
+
+                        </section>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="card empty">
+                        You don't have any notifications yet.
+                    </div>
+
+                {% endif %}
+
+            </main>
+        </div>
+
+        {% include "components/site_footer.html" %}
+
+    </div>
+
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}" defer></script>
+
+</body>
+</html>

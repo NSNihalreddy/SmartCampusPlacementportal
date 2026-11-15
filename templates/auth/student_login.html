@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="icon" type="image/png"
+          href="{{ url_for('static', filename='favicon.png') }}">
+
+    <title>Student Login</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        /* =========================================
+           STUDENT LOGIN - PAGE LAYOUT
+           ========================================= */
+
+        html {
+            min-height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body.faculty-login-page {
+            min-height: 100vh;
+            min-height: 100dvh;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+
+            display: flex;
+            flex-direction: column;
+
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        body.faculty-login-page *,
+        body.faculty-login-page *::before,
+        body.faculty-login-page *::after {
+            box-sizing: border-box;
+        }
+
+        /* Main area takes only the available height */
+        body.faculty-login-page .faculty-login-wrapper {
+            flex: 1 0 auto;
+
+            min-height: 0;
+            width: 100%;
+            max-width: 100%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 24px 20px;
+
+            box-sizing: border-box;
+        }
+
+        /* Login card */
+        body.faculty-login-page .faculty-login-card {
+            width: 100%;
+            max-width: 540px;
+            min-width: 0;
+
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        /* Logo */
+        body.faculty-login-page .faculty-login-logo img {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        /* Password notice */
+        .initial-password-notice {
+            width: 100%;
+            margin: 18px 0 8px;
+
+            overflow: hidden;
+            white-space: nowrap;
+
+            background: rgba(169,189,210,.12);
+            border: 1px solid rgba(169,189,210,.28);
+            border-radius: 9px;
+
+            padding: 10px 0;
+
+            color: #c8d9e8;
+            font-size: .88rem;
+        }
+
+        .initial-password-track {
+            display: inline-block;
+            padding-left: 100%;
+            animation: password-scroll 18s linear infinite;
+        }
+
+        .initial-password-notice:hover .initial-password-track {
+            animation-play-state: paused;
+        }
+
+        @keyframes password-scroll {
+            to {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* Login error message */
+        .student-login-error {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            margin: 18px 0;
+            padding: 12px 14px;
+
+            border-radius: 9px;
+
+            background: rgba(220, 53, 69, 0.12);
+            border: 1px solid rgba(220, 53, 69, 0.4);
+
+            color: #ff8585;
+            font-size: 14px;
+            text-align: left;
+
+            overflow-wrap: anywhere;
+        }
+
+        .student-login-error i {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        /* Footer remains below the login wrapper */
+        body.faculty-login-page .site-footer {
+            position: relative;
+
+            flex-shrink: 0;
+
+            width: 100%;
+            max-width: 100%;
+
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        /* Tablet and mobile */
+        @media (max-width: 600px) {
+            body.faculty-login-page .faculty-login-wrapper {
+                padding: 18px 14px;
+            }
+
+            body.faculty-login-page .faculty-login-card {
+                width: 100%;
+                max-width: 420px;
+            }
+
+            body.faculty-login-page .site-footer {
+                padding: 14px 10px;
+            }
+        }
+
+        /* Short screens: allow natural scrolling */
+        @media (max-height: 700px) {
+            body.faculty-login-page .faculty-login-wrapper {
+                align-items: flex-start;
+                padding-top: 24px;
+                padding-bottom: 24px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .initial-password-track {
+                animation: none;
+                padding-left: 0;
+                white-space: normal;
+            }
+        }
+    </style>
+</head>
+
+<body class="faculty-login-page">
+
+    <main class="faculty-login-wrapper">
+
+        <div class="faculty-login-card">
+
+            <div class="faculty-login-logo">
+                <img
+                    src="{{ url_for('static', filename='images/logo.png') }}"
+                    alt="Vel Tech University"
+                >
+            </div>
+
+            <h1>Student Login</h1>
+
+            <p class="faculty-login-subtitle">
+                Login to access your placement dashboard.
+            </p>
+
+            <!-- Login error messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    <div class="student-login-error" role="alert">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endwith %}
+
+            <!-- Student Login Form -->
+            <form method="POST" class="faculty-login-form">
+
+                <div class="faculty-login-input">
+                    <i class="fa-solid fa-id-card"></i>
+
+                    <input
+                        type="text"
+                        name="register_number"
+                        placeholder="Register Number"
+                        autocomplete="username"
+                        required
+                    >
+                </div>
+
+                <div class="faculty-login-input">
+                    <i class="fa-solid fa-lock"></i>
+
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="faculty-login-submit">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    Login
+                </button>
+
+            </form>
+
+            <!-- Forgot Password -->
+            <div class="faculty-forgot-password">
+                <a href="{{ url_for('forgot_password', role='student') }}">
+                    Forgot Password?
+                </a>
+            </div>
+
+            <!-- Initial Password Information -->
+            <div
+                class="initial-password-notice"
+                role="note"
+                aria-label="Initial password information"
+            >
+                <div class="initial-password-track">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Your initial password is your Date of Birth in DDMMYYYY format.
+                    &nbsp; • &nbsp;
+                    Your initial password is your Date of Birth in DDMMYYYY format.
+                    &nbsp; • &nbsp;
+                </div>
+            </div>
+
+            <!-- Back to Home -->
+            <a href="{{ url_for('home') }}" class="faculty-login-back">
+                ← Back to Main Page
+            </a>
+
+        </div>
+
+    </main>
+
+    {% include "components/site_footer.html" %}
+
+</body>
+</html>

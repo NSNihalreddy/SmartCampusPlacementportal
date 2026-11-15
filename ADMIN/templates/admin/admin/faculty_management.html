@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="/static/favicon.png?v=3">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Management | PLACEHUB</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        :root {
+            --bg:#090b0e; --panel:#151719; --panel2:#1b1e20;
+            --border:#303236; --text:#f3f0eb; --muted:#a9a7a2;
+            --gold:#dfb98f; --gold-dark:#c99e70; --teal:#08c9c2;
+            --danger:#e6a0a0; --success:#a8e9c4;
+        }
+        * { box-sizing:border-box; }
+        body {
+            margin:0; min-height:100vh; background:var(--bg); color:var(--text);
+            font-family:Inter,"Segoe UI",Arial,sans-serif;
+        }
+        a { color:inherit; text-decoration:none; }
+        button,input,select { font:inherit; }
+        .topbar {
+            min-height:82px; padding:14px clamp(18px,4vw,60px);
+            display:flex; align-items:center; justify-content:space-between;
+            gap:20px; background:#141618; border-bottom:1px solid var(--border);
+        }
+        .brand { display:block; flex:0 0 180px; width:180px; max-width:38vw; }
+        .brand img { display:block; width:100%; max-width:100%; height:auto; object-fit:contain; }
+        .top-right { display:flex; align-items:center; gap:20px; }
+        .profile { display:flex; align-items:center; gap:10px; text-align:right; }
+        .profile strong { display:block; font-size:12px; }
+        .profile small { display:block; margin-top:4px; color:var(--muted); font-size:10px; }
+        .avatar {
+            width:40px;height:40px;border:1px solid #765b42;border-radius:50%;
+            display:grid;place-items:center;background:#2b251f;color:var(--gold);
+            font-weight:700;flex:0 0 40px;
+        }
+        .top-actions { display:flex;gap:9px;align-items:center; }
+        .btn, .top-link {
+            min-height:38px;padding:0 13px;border:1px solid #51432f;
+            border-radius:7px;background:transparent;color:var(--gold);
+            display:inline-flex;align-items:center;justify-content:center;gap:8px;
+            font-size:11px;font-weight:650;cursor:pointer;
+        }
+        .btn:hover,.top-link:hover { background:#28231e; }
+        .btn-primary {
+            border:0;background:linear-gradient(110deg,#e7c49d,#d5ad82);
+            color:#171513;
+        }
+        .btn-danger { color:var(--danger);border-color:#694447; }
+        .btn-danger:hover { background:#2a1c20; }
+        .main { width:100%; max-width:1500px; margin:0 auto; padding:42px clamp(18px,4vw,60px) 55px; }
+        .eyebrow { color:var(--gold);font-size:10px;font-weight:800;letter-spacing:3px; }
+        h1 {
+            margin:13px 0 8px;font-family:Georgia,"Times New Roman",serif;
+            font-size:clamp(32px,4vw,46px);font-weight:400;
+        }
+        .subtitle { margin:0;color:var(--muted);font-size:13px;line-height:1.7; }
+        .flash-list { display:grid;gap:8px;margin-top:22px; }
+        .flash { padding:12px 15px;border:1px solid;border-radius:8px;font-size:12px; }
+        .flash.success { color:var(--success);background:#183025;border-color:#315b43; }
+        .flash.danger,.flash.error { color:#f0aaaa;background:#321d20;border-color:#653c3c; }
+        .flash.warning { color:#f0d29c;background:#302719;border-color:#6a512e; }
+        .stats {
+            display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+            gap:14px;margin-top:28px;
+        }
+        .stat {
+            padding:18px 20px;border:1px solid var(--border);border-radius:10px;
+            background:linear-gradient(145deg,#191b1d,#111315);
+        }
+        .stat span { color:var(--muted);font-size:11px; }
+        .stat strong { display:block;margin-top:9px;font-size:26px;font-weight:650; }
+        .stat.gold strong { color:var(--gold); }
+        .section {
+            margin-top:25px;padding:23px;border:1px solid var(--border);
+            border-radius:12px;background:linear-gradient(145deg,#17191b,#111315);
+        }
+        .section-head {
+            display:flex;align-items:center;justify-content:space-between;
+            gap:15px;margin-bottom:18px;
+        }
+        .section-head h2 {
+            margin:0;font-family:Georgia,"Times New Roman",serif;
+            font-size:23px;font-weight:400;
+        }
+        .section-head p { margin:6px 0 0;color:var(--muted);font-size:11px; }
+        .filters {
+            display:grid;grid-template-columns:minmax(220px,1fr) 190px 190px auto;
+            gap:10px;margin-bottom:17px;
+        }
+        .control {
+            width:100%;min-height:42px;padding:0 12px;border:1px solid #3b3d40;
+            border-radius:7px;background:#0e1012;color:var(--text);outline:none;
+            font-size:12px;
+        }
+        .control:focus { border-color:var(--gold-dark);box-shadow:0 0 0 2px #dfb98f1c; }
+        .table-wrap { width:100%;overflow-x:auto;border:1px solid #303236;border-radius:8px; }
+        table { width:100%;min-width:980px;border-collapse:collapse; }
+        th {
+            padding:14px 13px;background:#a9c1d8;color:#101820;
+            text-align:left;font-size:11px;letter-spacing:.3px;white-space:nowrap;
+        }
+        td {
+            padding:14px 13px;border-top:1px solid #2d3033;
+            color:#d8d5cf;font-size:11px;vertical-align:middle;
+        }
+        tbody tr:hover { background:#ffffff08; }
+        .faculty-name { color:#fff;font-weight:700;font-size:12px; }
+        .muted-line { display:block;margin-top:5px;color:#92918c;font-size:10px; }
+        .role-pill,.status-pill {
+            display:inline-flex;padding:5px 9px;border:1px solid #51432f;
+            border-radius:20px;background:#28231e;color:#dfbd91;
+            font-size:9px;font-weight:700;
+        }
+        .status-pill.active { color:var(--success);border-color:#315b43;background:#183025; }
+        .status-pill.inactive { color:var(--danger);border-color:#653c3c;background:#321d20; }
+        .row-actions { display:flex;gap:7px;flex-wrap:wrap; }
+        .small-btn {
+            min-height:31px;padding:0 10px;border:1px solid #51432f;border-radius:6px;
+            background:#24211d;color:var(--gold);font-size:10px;font-weight:700;cursor:pointer;
+        }
+        .small-btn:hover { background:#342b21; }
+        .small-btn.danger { color:var(--danger);border-color:#694447;background:#281d20; }
+        .small-btn.neutral { color:#d5d2cc;border-color:#45474a;background:#202326; }
+        .empty { padding:28px;text-align:center;color:var(--muted);font-size:12px; }
+        .create-grid {
+            display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;
+        }
+        .field label { display:block;margin-bottom:7px;color:#dcd8d1;font-size:11px;font-weight:650; }
+        .field .control { min-height:44px; }
+        .field small { display:block;margin-top:5px;color:#8f918e;font-size:10px; }
+        .create-actions { margin-top:17px;display:flex;justify-content:flex-end; }
+        .password-result {
+            margin-top:18px;padding:16px;border:1px solid #526846;
+            border-radius:9px;background:#17251d;color:#d8f1df;
+        }
+        .password-result strong { display:block;margin-bottom:7px;font-size:12px; }
+        .password-value {
+            display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+            font-family:Consolas,monospace;font-size:15px;word-break:break-all;
+        }
+        .password-result p { margin:9px 0 0;color:#b4cbb9;font-size:10px;line-height:1.6; }
+        .edit-details {
+            display:none;margin-top:12px;padding:15px;border:1px solid #4a4034;
+            border-radius:8px;background:#101214;
+        }
+        .edit-details.open { display:block; }
+        .edit-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
+        .edit-actions { display:flex;justify-content:flex-end;gap:8px;margin-top:12px; }
+        .note {
+            margin-top:18px;padding:12px 14px;border-left:3px solid var(--teal);
+            background:#08c9c20d;color:#aeb9b7;font-size:10px;line-height:1.65;
+        }
+        .footer { padding:18px 20px 23px;color:#777b7e;text-align:center;font-size:10px; }
+
+        /* PLACEHUB in-page confirmation modal */
+        .modal-backdrop {
+            position:fixed;inset:0;z-index:1000;display:none;align-items:center;
+            justify-content:center;padding:20px;background:rgba(0,0,0,.76);
+            backdrop-filter:blur(5px);
+        }
+        .modal-backdrop.open { display:flex; }
+        .confirm-modal {
+            width:min(100%,470px);padding:26px;border:1px solid #51432f;
+            border-radius:14px;background:linear-gradient(145deg,#1c1e20,#101214);
+            box-shadow:0 24px 80px #000b;animation:modalIn .16s ease-out;
+        }
+        @keyframes modalIn {
+            from { opacity:0;transform:translateY(8px) scale(.985); }
+            to { opacity:1;transform:translateY(0) scale(1); }
+        }
+        .modal-icon {
+            width:44px;height:44px;display:grid;place-items:center;margin-bottom:16px;
+            border:1px solid #6a512e;border-radius:12px;background:#302719;
+            color:var(--gold);font-size:18px;
+        }
+        .modal-icon.danger { border-color:#694447;background:#321d20;color:var(--danger); }
+        .confirm-modal h3 {
+            margin:0 0 10px;font-family:Georgia,"Times New Roman",serif;
+            font-size:24px;font-weight:400;color:var(--text);
+        }
+        .confirm-modal p {
+            margin:0;color:#b7b4ad;font-size:12px;line-height:1.7;
+        }
+        .modal-warning {
+            margin-top:15px;padding:11px 13px;border-left:3px solid var(--gold-dark);
+            border-radius:4px;background:#dfb98f12;color:#d8c4ad;
+            font-size:11px;line-height:1.6;
+        }
+        .modal-actions {
+            display:flex;justify-content:flex-end;gap:9px;margin-top:23px;
+        }
+        .modal-actions .btn { min-width:100px;min-height:40px; }
+        .modal-actions .btn-cancel {
+            color:#ddd;border-color:#48494b;background:#242629;
+        }
+        .modal-actions .btn-confirm-danger {
+            color:#fff;background:#8b4548;border:1px solid #a75b5e;
+        }
+        .modal-actions .btn-confirm-danger:hover { background:#a14e52; }
+        .toast {
+            position:fixed;right:22px;bottom:22px;z-index:1100;display:none;
+            max-width:min(380px,calc(100vw - 44px));padding:13px 17px;
+            border:1px solid #526846;border-radius:9px;background:#17251d;
+            color:#d8f1df;font-size:12px;box-shadow:0 12px 35px #0008;
+        }
+        .toast.show { display:block; }
+        @media(max-width:900px) {
+            .stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .filters { grid-template-columns:1fr 1fr; }
+        }
+        @media(max-width:650px) {
+            .topbar { align-items:flex-start;flex-direction:column;padding:16px 18px; }
+            .top-right { width:100%;justify-content:space-between;flex-wrap:wrap; }
+            .main { padding-top:30px; }
+            .section { padding:16px; }
+            .section-head { align-items:flex-start;flex-direction:column; }
+            .filters,.create-grid,.edit-grid { grid-template-columns:1fr; }
+            .stats { gap:9px; }
+            .stat { padding:14px; }
+            .stat strong { font-size:22px; }
+            .profile { text-align:left; }
+        }
+    </style>
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="{{ url_for('admin.admin_dashboard') }}" aria-label="PLACEHUB Admin Dashboard">
+        <img src="{{ url_for('static', filename='images/logo.png') }}"
+             alt="PLACEHUB logo">
+    </a>
+    <div class="top-right">
+        <div class="profile">
+            <div>
+                <strong>{{ account["name"] }}</strong>
+                <small>Administrator · {{ account["username"] }}</small>
+            </div>
+            <div class="avatar">{{ account["name"][:1]|upper }}</div>
+        </div>
+        <div class="top-actions">
+            <a class="top-link" href="{{ url_for('admin.admin_dashboard') }}">
+                <i class="fa-solid fa-grid-2"></i> Dashboard
+            </a>
+            <form method="POST" action="{{ url_for('admin.logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-danger" type="submit">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<main class="main">
+    <span class="eyebrow">ADMINISTRATION WORKSPACE</span>
+    <h1>Faculty Management</h1>
+    <p class="subtitle">
+        Manage Dean, HOD and Trainer accounts, update faculty details and control account access.
+    </p>
+
+    <div class="flash-list" id="flashList">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}" role="status">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+    </div>
+
+    {% if one_time_password %}
+    <section class="password-result" aria-live="polite">
+        <strong><i class="fa-solid fa-key"></i> Temporary credentials generated</strong>
+        <div class="password-value">
+            <span>{{ one_time_faculty_id }}</span>
+            <span>·</span>
+            <code id="temporaryPassword">{{ one_time_password }}</code>
+            <button type="button" class="small-btn"
+                    onclick="copyTemporaryPassword()">Copy password</button>
+        </div>
+        <p>
+            This password is displayed only once. Copy it and provide it securely
+            to the faculty member. They should change it after receiving access.
+        </p>
+    </section>
+    {% endif %}
+
+    <section class="stats" aria-label="Faculty account summary">
+        <div class="stat gold"><span>Total Faculty</span><strong>{{ total_faculty }}</strong></div>
+        <div class="stat"><span>Dean</span><strong>{{ dean_count }}</strong></div>
+        <div class="stat"><span>HOD</span><strong>{{ hod_count }}</strong></div>
+        <div class="stat"><span>Trainer</span><strong>{{ trainer_count }}</strong></div>
+    </section>
+
+    <section class="section" aria-labelledby="facultyListHeading">
+        <div class="section-head">
+            <div>
+                <h2 id="facultyListHeading">All Faculty Accounts</h2>
+                <p>Search by faculty ID, name or email. Filters apply to the listed results.</p>
+            </div>
+            <a href="#createFaculty" class="btn btn-primary">
+                <i class="fa-solid fa-user-plus"></i> Add Faculty
+            </a>
+        </div>
+
+        <form method="GET" action="{{ url_for('admin.faculty_management') }}"
+              class="filters" id="searchForm">
+            <input class="control" type="search" name="search" value="{{ search }}"
+                   placeholder="Search TTS number, name or email"
+                   aria-label="Search faculty">
+            <select class="control" id="roleFilter" aria-label="Filter by faculty role">
+                <option value="">All roles</option>
+                <option value="Dean">Dean</option>
+                <option value="HOD">HOD</option>
+                <option value="Trainer">Trainer</option>
+            </select>
+            <select class="control" id="statusFilter" aria-label="Filter by account status">
+                <option value="">All account statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Disabled</option>
+            </select>
+            <button class="btn btn-primary" type="submit">
+                <i class="fa-solid fa-magnifying-glass"></i> Search
+            </button>
+        </form>
+
+        <div class="table-wrap">
+            <table id="facultyTable">
+                <thead>
+                    <tr>
+                        <th>Faculty</th>
+                        <th>TTS Number</th>
+                        <th>Role</th>
+                        <th>Account Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for faculty in faculty_members %}
+                    <tr data-role="{{ faculty['role'] }}"
+                        data-status="{{ 'active' if faculty['is_active'] else 'inactive' }}">
+                        <td>
+                            <span class="faculty-name">{{ faculty['name'] }}</span>
+                            <span class="muted-line">{{ faculty['email'] }}</span>
+                        </td>
+                        <td>{{ faculty['tts_number'] }}</td>
+                        <td><span class="role-pill">{{ faculty['role'] }}</span></td>
+                        <td>
+                            {% if faculty['is_active'] %}
+                                <span class="status-pill active">Active</span>
+                            {% else %}
+                                <span class="status-pill inactive">Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <button type="button" class="small-btn"
+                                        data-edit-target="edit-{{ faculty['id'] }}">
+                                    <i class="fa-solid fa-pen"></i> Edit Details
+                                </button>
+
+                                <form method="POST"
+                                      action="{{ url_for('admin.toggle_faculty', faculty_id=faculty['id']) }}"
+                                      data-confirm-action="{{ 'disable' if faculty['is_active'] else 'enable' }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit"
+                                            class="small-btn {% if faculty['is_active'] %}danger{% endif %}">
+                                        {% if faculty['is_active'] %}
+                                            <i class="fa-solid fa-ban"></i> Disable
+                                        {% else %}
+                                            <i class="fa-solid fa-check"></i> Enable
+                                        {% endif %}
+                                    </button>
+                                </form>
+
+                                <form method="POST"
+                                      action="{{ url_for('admin.reset_faculty_password', faculty_id=faculty['id']) }}"
+                                      data-confirm-reset="{{ faculty['tts_number'] }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="small-btn neutral">
+                                        <i class="fa-solid fa-key"></i> Reset Password
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div class="edit-details" id="edit-{{ faculty['id'] }}">
+                                <form method="POST"
+                                      action="{{ url_for('admin.update_faculty', faculty_id=faculty['id']) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="edit-grid">
+                                        <div class="field">
+                                            <label>Faculty TTS Number (cannot be changed)</label>
+                                            <input class="control" value="{{ faculty['tts_number'] }}" disabled>
+                                        </div>
+                                        <div class="field">
+                                            <label for="name-{{ faculty['id'] }}">Full Name</label>
+                                            <input class="control" id="name-{{ faculty['id'] }}"
+                                                   name="name" value="{{ faculty['name'] }}"
+                                                   maxlength="120" required>
+                                        </div>
+                                        <div class="field">
+                                            <label for="email-{{ faculty['id'] }}">Email</label>
+                                            <input class="control" type="email"
+                                                   id="email-{{ faculty['id'] }}" name="email"
+                                                   value="{{ faculty['email'] }}" maxlength="150" required>
+                                        </div>
+                                        <div class="field">
+                                            <label for="role-{{ faculty['id'] }}">Role</label>
+                                            <select class="control" id="role-{{ faculty['id'] }}"
+                                                    name="role" required>
+                                                <option value="Dean" {% if faculty['role'] == 'Dean' %}selected{% endif %}>Dean</option>
+                                                <option value="HOD" {% if faculty['role'] == 'HOD' %}selected{% endif %}>HOD</option>
+                                                <option value="Trainer" {% if faculty['role'] == 'Trainer' %}selected{% endif %}>Trainer</option>
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label for="dob-{{ faculty['id'] }}">Date of Birth (DDMMYYYY)</label>
+                                            <input class="control" id="dob-{{ faculty['id'] }}"
+                                                   name="date_of_birth" inputmode="numeric"
+                                                   pattern="[0-9]{8}" maxlength="8"
+                                                   value="{{ faculty['date_of_birth'] or '' }}"
+                                                   placeholder="DDMMYYYY">
+                                            <small>Leave unchanged if you do not need to update the date of birth.</small>
+                                        </div>
+                                    </div>
+                                    <div class="edit-actions">
+                                        <button type="button" class="small-btn neutral"
+                                                data-edit-target="edit-{{ faculty['id'] }}">Cancel</button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="empty">No faculty accounts found.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="note">
+            Disabling an account blocks future sign-ins and increments its session version,
+            which revokes existing sessions. Faculty records are retained; do not delete
+            records when a member resigns or transfers.
+        </p>
+    </section>
+
+    <section class="section" id="createFaculty" aria-labelledby="createFacultyHeading">
+        <div class="section-head">
+            <div>
+                <h2 id="createFacultyHeading">Add Faculty Account</h2>
+                <p>Create an account for a Dean, HOD or Trainer.</p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.create_faculty') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="create-grid">
+                <div class="field">
+                    <label for="new_tts">Faculty TTS Number</label>
+                    <input class="control" id="new_tts" name="tts_number"
+                           placeholder="TTS1234" pattern="TTS[0-9]{4}"
+                           maxlength="7" title="Use format TTS1234" required>
+                </div>
+                <div class="field">
+                    <label for="new_name">Full Name</label>
+                    <input class="control" id="new_name" name="name"
+                           maxlength="120" placeholder="Faculty full name" required>
+                </div>
+                <div class="field">
+                    <label for="new_email">Institutional Email</label>
+                    <input class="control" type="email" id="new_email" name="email"
+                           maxlength="150" placeholder="name@veltech.edu.in" required>
+                </div>
+                <div class="field">
+                    <label for="new_role">Faculty Role</label>
+                    <select class="control" id="new_role" name="role" required>
+                        <option value="">Select role</option>
+                        <option value="Dean">Dean</option>
+                        <option value="HOD">HOD</option>
+                        <option value="Trainer">Trainer</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="new_dob">Date of Birth</label>
+                    <input class="control" id="new_dob" name="date_of_birth"
+                           inputmode="numeric" pattern="[0-9]{8}" maxlength="8"
+                           placeholder="DDMMYYYY" title="Enter 8 digits in DDMMYYYY format" required>
+                    <small>Used only for account verification and initial setup workflow.</small>
+                </div>
+            </div>
+            <div class="create-actions">
+                <button class="btn btn-primary" type="submit">
+                    <i class="fa-solid fa-user-plus"></i> Create Faculty Account
+                </button>
+            </div>
+        </form>
+    </section>
+</main>
+
+<div class="modal-backdrop" id="actionModal" aria-hidden="true">
+    <section class="confirm-modal" role="dialog" aria-modal="true"
+             aria-labelledby="modalTitle" aria-describedby="modalMessage">
+        <div class="modal-icon" id="modalIcon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h3 id="modalTitle">Confirm action</h3>
+        <p id="modalMessage">Please confirm that you want to continue.</p>
+        <div class="modal-warning" id="modalWarning" hidden></div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-cancel" id="modalCancel">Cancel</button>
+            <button type="button" class="btn btn-primary" id="modalConfirm">Confirm</button>
+        </div>
+    </section>
+</div>
+<div class="toast" id="pageToast" role="status" aria-live="polite"></div>
+
+<footer class="footer">PLACEHUB · Smart Campus Placement Portal · Faculty Administration</footer>
+
+<script>
+    document.addEventListener("click", event => {
+        const editButton = event.target.closest("[data-edit-target]");
+        if (!editButton) return;
+        const panel = document.getElementById(editButton.dataset.editTarget);
+        if (panel) panel.classList.toggle("open");
+    });
+
+    const actionModal = document.getElementById("actionModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalMessage = document.getElementById("modalMessage");
+    const modalWarning = document.getElementById("modalWarning");
+    const modalIcon = document.getElementById("modalIcon");
+    const modalConfirm = document.getElementById("modalConfirm");
+    const modalCancel = document.getElementById("modalCancel");
+    let pendingActionForm = null;
+    let confirmedActionForm = null;
+    let allowConfirmedSubmit = false;
+
+    function openActionModal(form, kind) {
+        pendingActionForm = form;
+        modalWarning.hidden = true;
+        modalWarning.textContent = "";
+        modalIcon.className = "modal-icon";
+        modalConfirm.className = "btn btn-primary";
+
+        if (kind === "reset") {
+            const facultyId = form.dataset.confirmReset;
+            modalTitle.textContent = "Reset Faculty Password?";
+            modalMessage.textContent =
+                `You are about to generate a new temporary password for ${facultyId}.`;
+            modalWarning.textContent =
+                "The faculty member's current password will stop working immediately. Make sure you can securely share the new temporary password.";
+            modalWarning.hidden = false;
+            modalIcon.classList.add("danger");
+            modalIcon.innerHTML = '<i class="fa-solid fa-key"></i>';
+            modalConfirm.textContent = "Reset Password";
+            modalConfirm.classList.add("btn-confirm-danger");
+        } else {
+            const action = form.dataset.confirmAction;
+            const facultyRow = form.closest("tr");
+            const facultyName = facultyRow?.querySelector(".faculty-name")?.textContent?.trim() || "this faculty member";
+            const facultyId = facultyRow?.children[1]?.textContent?.trim() || "";
+            const disabling = action === "disable";
+
+            modalTitle.textContent = disabling ? "Disable Faculty Account?" : "Enable Faculty Account?";
+            modalMessage.textContent = disabling
+                ? `Are you sure you want to disable ${facultyName} (${facultyId})?`
+                : `Are you sure you want to enable ${facultyName} (${facultyId})?`;
+            modalWarning.textContent = disabling
+                ? "This account will no longer be able to sign in. Existing sessions will be revoked. The faculty record and its history will be retained."
+                : "This account will be allowed to sign in again.";
+            modalWarning.hidden = false;
+            modalIcon.classList.toggle("danger", disabling);
+            modalIcon.innerHTML = disabling
+                ? '<i class="fa-solid fa-user-lock"></i>'
+                : '<i class="fa-solid fa-user-check"></i>';
+            modalConfirm.textContent = disabling ? "Disable Account" : "Enable Account";
+            if (disabling) modalConfirm.classList.add("btn-confirm-danger");
+        }
+
+        actionModal.classList.add("open");
+        actionModal.setAttribute("aria-hidden", "false");
+        modalCancel.focus();
+    }
+
+    function closeActionModal() {
+        actionModal.classList.remove("open");
+        actionModal.setAttribute("aria-hidden", "true");
+        pendingActionForm = null;
+    }
+
+    document.addEventListener("submit", event => {
+        const form = event.target;
+        if (allowConfirmedSubmit && form === confirmedActionForm) {
+            allowConfirmedSubmit = false;
+            confirmedActionForm = null;
+            return;
+        }
+        if (form.dataset.confirmAction || form.dataset.confirmReset) {
+            event.preventDefault();
+            openActionModal(form, form.dataset.confirmReset ? "reset" : "status");
+        }
+    });
+
+    modalCancel.addEventListener("click", closeActionModal);
+    actionModal.addEventListener("click", event => {
+        if (event.target === actionModal) closeActionModal();
+    });
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && actionModal.classList.contains("open")) {
+            closeActionModal();
+        }
+    });
+    modalConfirm.addEventListener("click", () => {
+        if (!pendingActionForm) return;
+        const form = pendingActionForm;
+        closeActionModal();
+        confirmedActionForm = form;
+        allowConfirmedSubmit = true;
+        form.requestSubmit();
+    });
+
+    function showPageToast(message) {
+        const toast = document.getElementById("pageToast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        window.setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    function applyFacultyFilters() {
+        const role = document.getElementById("roleFilter").value;
+        const status = document.getElementById("statusFilter").value;
+        document.querySelectorAll("#facultyTable tbody tr[data-role]").forEach(row => {
+            const roleMatch = !role || row.dataset.role === role;
+            const statusMatch = !status || row.dataset.status === status;
+            row.hidden = !(roleMatch && statusMatch);
+        });
+    }
+
+    document.getElementById("roleFilter").addEventListener("change", applyFacultyFilters);
+    document.getElementById("statusFilter").addEventListener("change", applyFacultyFilters);
+
+    function copyTemporaryPassword() {
+        const value = document.getElementById("temporaryPassword")?.textContent?.trim();
+        if (!value) return;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(value).then(() => alert("Temporary password copied."));
+        } else {
+            const helper = document.createElement("textarea");
+            helper.value = value;
+            document.body.appendChild(helper);
+            helper.select();
+            document.execCommand("copy");
+            helper.remove();
+            showPageToast("Temporary password copied.");
+        }
+    }
+
+    document.querySelectorAll("#flashList .flash").forEach(message => {
+        const delay = message.classList.contains("danger") ? 6000 : 4000;
+        window.setTimeout(() => {
+            message.style.opacity = "0";
+            window.setTimeout(() => message.remove(), 350);
+        }, delay);
+    });
+</script>
+</body>
+</html>

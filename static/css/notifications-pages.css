@@ -1,0 +1,344 @@
+/* Scoped notification page styles. Does not change the faculty sidebar dimensions or submenu spacing. */
+:root {
+  --notice-bg: #171717;
+  --notice-panel: rgba(25, 25, 25, .68);
+  --notice-panel-soft: rgba(255, 255, 255, .055);
+  --notice-border: rgba(255, 255, 255, .13);
+  --notice-text: #f7f8fa;
+  --notice-muted: #b5c0ca;
+  --notice-accent: #abc1d6;
+}
+body.faculty-dashboard-body.faculty-utility-page,
+body.notification-student-page {
+  margin: 0;
+  min-height: 100vh;
+  /* Match the campus backdrop used by the dashboards. Keep the dark overlay
+     so the notification text and glass panels remain easy to read. */
+  background:
+    linear-gradient(rgba(0, 0, 0, .75), rgba(0, 0, 0, .75)),
+    url("../images/campus.jpg") center / cover no-repeat fixed;
+  color: var(--notice-text);
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+body.faculty-dashboard-body.faculty-utility-page {
+  display: flex;
+  min-height: 100vh;
+}
+body.faculty-dashboard-body.faculty-utility-page > main.wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: calc(100% - var(--faculty-sidebar-expanded, 300px));
+  max-width: none;
+  margin: 0 0 0 var(--faculty-sidebar-expanded, 300px);
+  padding: clamp(24px, 3vw, 48px);
+  box-sizing: border-box;
+  transition: margin-left .25s ease, width .25s ease;
+}
+body.faculty-dashboard-body.faculty-utility-page.faculty-sidebar-collapsed > main.wrap {
+  margin-left: var(--faculty-sidebar-collapsed, 92px);
+  width: calc(100% - var(--faculty-sidebar-collapsed, 92px));
+}
+body.notification-student-page > main.wrap {
+  width: min(1100px, calc(100% - 48px));
+  max-width: none;
+  margin: 36px auto;
+  padding: 0;
+  box-sizing: border-box;
+}
+body.faculty-dashboard-body.faculty-utility-page .top,
+body.notification-student-page .top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+body.faculty-dashboard-body.faculty-utility-page h1,
+body.notification-student-page h1 {
+  margin: 0 0 8px;
+  color: #fff;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.15;
+  font-weight: 750;
+}
+body.faculty-dashboard-body.faculty-utility-page .muted,
+body.notification-student-page .muted,
+body.faculty-dashboard-body.faculty-utility-page small,
+body.notification-student-page small {
+  color: var(--notice-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+body.faculty-dashboard-body.faculty-utility-page .card,
+body.notification-student-page .card {
+  margin: 20px 0;
+  padding: clamp(18px, 2.4vw, 28px);
+  color: var(--notice-text);
+  background: var(--notice-panel);
+  border: 1px solid var(--notice-border);
+  border-radius: 18px;
+  box-shadow: 0 14px 36px rgba(0,0,0,.2);
+  backdrop-filter: blur(14px);
+}
+body.faculty-dashboard-body.faculty-utility-page .unread,
+body.notification-student-page .unread {
+  border-left: 4px solid var(--notice-accent);
+}
+body.faculty-dashboard-body.faculty-utility-page .empty,
+body.notification-student-page .empty {
+  text-align: center;
+  padding: 36px 20px;
+  color: var(--notice-muted);
+  background: var(--notice-panel);
+}
+body.faculty-dashboard-body.faculty-utility-page p,
+body.notification-student-page p {
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+body.faculty-dashboard-body.faculty-utility-page a,
+body.notification-student-page a {
+  color: var(--notice-accent);
+}
+body.faculty-dashboard-body.faculty-utility-page a.btn,
+body.faculty-dashboard-body.faculty-utility-page button.btn,
+body.notification-student-page a.btn,
+body.notification-student-page button.btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--notice-accent);
+  color: #111820;
+  font: inherit;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: transform .18s ease, filter .18s ease, background .18s ease;
+}
+body.faculty-dashboard-body.faculty-utility-page a.btn:hover,
+body.faculty-dashboard-body.faculty-utility-page button.btn:hover,
+body.notification-student-page a.btn:hover,
+body.notification-student-page button.btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+body.faculty-dashboard-body.faculty-utility-page a.btn.secondary,
+body.notification-student-page a.btn.secondary {
+  color: var(--notice-text) !important;
+  background: var(--notice-panel-soft) !important;
+  border-color: var(--notice-border);
+}
+body.faculty-dashboard-body.faculty-utility-page .flash,
+body.notification-student-page .flash {
+  margin: 16px 0;
+  padding: 13px 16px;
+  color: #e8f7eb;
+  background: rgba(48, 130, 77, .2);
+  border: 1px solid rgba(91, 190, 120, .35);
+  border-radius: 12px;
+}
+body.faculty-dashboard-body.faculty-utility-page label,
+body.notification-student-page label {
+  display: block;
+  margin: 18px 0 8px;
+  color: #e8edf2;
+  font-weight: 650;
+}
+body.faculty-dashboard-body.faculty-utility-page input,
+body.faculty-dashboard-body.faculty-utility-page select,
+body.faculty-dashboard-body.faculty-utility-page textarea,
+body.notification-student-page input,
+body.notification-student-page select,
+body.notification-student-page textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  color: #f7f8fa;
+  background: rgba(255,255,255,.07);
+  border: 1px solid var(--notice-border);
+  border-radius: 10px;
+  font: inherit;
+  outline: none;
+}
+body.faculty-dashboard-body.faculty-utility-page select option,
+body.notification-student-page select option {
+  color: #111;
+  background: #fff;
+}
+body.faculty-dashboard-body.faculty-utility-page input:focus,
+body.faculty-dashboard-body.faculty-utility-page select:focus,
+body.faculty-dashboard-body.faculty-utility-page textarea:focus,
+body.notification-student-page input:focus,
+body.notification-student-page select:focus,
+body.notification-student-page textarea:focus {
+  border-color: var(--notice-accent);
+  box-shadow: 0 0 0 3px rgba(171,193,214,.15);
+}
+body.faculty-dashboard-body.faculty-utility-page textarea,
+body.notification-student-page textarea {
+  min-height: 170px;
+  resize: vertical;
+}
+body.faculty-dashboard-body.faculty-utility-page form.inline,
+body.notification-student-page form.inline {
+  display: inline-block;
+}
+@media (max-width: 760px) {
+  body.faculty-dashboard-body.faculty-utility-page > main.wrap {
+    padding: 22px 16px;
+  }
+  body.notification-student-page > main.wrap {
+    width: calc(100% - 32px);
+    margin: 24px auto;
+  }
+  body.faculty-dashboard-body.faculty-utility-page .top,
+  body.notification-student-page .top {
+    align-items: flex-start;
+  }
+}
+/* ==================================================
+   FACULTY UTILITY PAGES - MOBILE WIDTH CORRECTION
+   Notifications and Send Announcements
+   ================================================== */
+
+@media (max-width: 760px) {
+
+    /* Remove the conflicting desktop flex layout. */
+    body.faculty-dashboard-body.faculty-utility-page {
+        display: block !important;
+        width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow-x: hidden;
+    }
+
+    /* Sidebar remains fixed at the left. */
+    body.faculty-dashboard-body.faculty-utility-page .faculty-sidebar {
+        position: fixed !important;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: var(--faculty-sidebar-collapsed, 84px);
+    }
+
+    /* Main content starts immediately after the compact sidebar. */
+    body.faculty-dashboard-body.faculty-utility-page > main.wrap {
+        display: block;
+        position: relative;
+
+        width: calc(100% - var(--faculty-sidebar-collapsed, 84px)) !important;
+        max-width: none !important;
+        min-width: 0;
+
+        margin: 0 0 0 var(--faculty-sidebar-collapsed, 84px) !important;
+        padding: 22px 12px !important;
+
+        box-sizing: border-box;
+    }
+
+    /* Header should use the available width. */
+    body.faculty-dashboard-body.faculty-utility-page .top {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        width: 100%;
+        min-width: 0;
+        gap: 12px;
+    }
+
+    body.faculty-dashboard-body.faculty-utility-page .top h1 {
+        font-size: 25px;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+
+    body.faculty-dashboard-body.faculty-utility-page .top > div {
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.faculty-dashboard-body.faculty-utility-page .top > div:last-child {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* Notification cards must not shrink to their text width. */
+    body.faculty-dashboard-body.faculty-utility-page .card {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        margin: 16px 0;
+        padding: 15px 12px;
+        box-sizing: border-box;
+        overflow-wrap: anywhere;
+    }
+
+    body.faculty-dashboard-body.faculty-utility-page .card .top {
+        width: 100%;
+        min-width: 0;
+        gap: 8px;
+    }
+
+    body.faculty-dashboard-body.faculty-utility-page .card p {
+        width: 100%;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        word-break: normal;
+    }
+}
+/* SEND ANNOUNCEMENT FORM - MOBILE */
+@media (max-width: 760px) {
+
+    body.faculty-dashboard-body.faculty-utility-page > main.wrap > form.card {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+
+        margin-top: 18px;
+        padding: 16px 12px;
+
+        box-sizing: border-box;
+    }
+
+    body.faculty-dashboard-body.faculty-utility-page > main.wrap > form.card label {
+        display: block;
+        width: 100%;
+        margin: 16px 0 8px;
+    }
+
+    body.faculty-dashboard-body.faculty-utility-page > main.wrap > form.card input,
+    body.faculty-dashboard-body.faculty-utility-page > main.wrap > form.card select,
+    body.faculty-dashboard-body.faculty-utility-page > main.wrap > form.card textarea {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    body.faculty-dashboard-body.faculty-utility-page > main.wrap > form.card small {
+        display: block;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    body.faculty-dashboard-body.faculty-utility-page > main.wrap > form.card p {
+        width: 100%;
+    }
+
+    body.faculty-dashboard-body.faculty-utility-page > main.wrap > form.card button {
+        width: 100%;
+        min-height: 46px;
+    }
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="/static/favicon.png?v=3">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Management | PLACEHUB</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+:root{--bg:#090b0e;--panel:#151719;--panel2:#1b1e20;--border:#303236;--text:#f3f0eb;--muted:#a9a7a2;--gold:#dfb98f;--danger:#e6a0a0;--teal:#08c9c2}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Segoe UI",Arial,sans-serif}
+a{color:inherit;text-decoration:none}.topbar{min-height:78px;padding:14px clamp(18px,5vw,64px);display:flex;justify-content:space-between;align-items:center;gap:18px;background:#141618;border-bottom:1px solid var(--border)}
+.brand{display:inline-flex;align-items:center;min-height:42px}.brand img{display:block;width:178px;max-height:48px;object-fit:contain;object-position:left center}.top-right{display:flex;align-items:center;gap:14px;color:var(--muted);font-size:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border:1px solid #51432f;border-radius:7px;background:#28231e;color:var(--gold);font-size:12px;cursor:pointer}
+main{max-width:1440px;margin:auto;padding:38px clamp(16px,4vw,56px)}.eyebrow{font-size:10px;letter-spacing:3px;font-weight:800;color:var(--gold)}
+h1{font:400 clamp(30px,4vw,43px) Georgia,serif;margin:12px 0 8px}.sub{color:var(--muted);font-size:13px;line-height:1.6;margin:0}
+.heading{display:flex;justify-content:space-between;align-items:end;gap:18px;flex-wrap:wrap;margin-bottom:25px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:24px 0}
+.stat,.panel{border:1px solid var(--border);border-radius:11px;background:linear-gradient(145deg,#191b1d,#111315)}
+.stat{padding:17px 19px}.stat span{font-size:11px;color:var(--muted)}.stat strong{display:block;font:30px Georgia,serif;color:var(--gold);margin-top:8px}
+.panel{padding:19px;margin-top:18px}.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;align-items:end}
+label{display:block;font-size:10px;color:var(--muted);margin-bottom:7px;letter-spacing:.5px}input,select{width:100%;min-height:40px;background:#0e1012;border:1px solid #383a3d;border-radius:6px;color:var(--text);padding:9px 11px;font-size:12px}
+.table-wrap{overflow-x:auto;margin-top:14px}table{width:100%;border-collapse:collapse;min-width:900px}th{text-align:left;color:var(--gold);font-size:10px;letter-spacing:.8px;text-transform:uppercase;padding:13px 12px;border-bottom:1px solid #494039}td{padding:14px 12px;border-bottom:1px solid #292c2f;font-size:12px;color:#e3e0db}tr:hover td{background:rgba(255,255,255,.018)}
+.muted{color:var(--muted)}.pill{display:inline-block;padding:5px 9px;border-radius:20px;font-size:10px;border:1px solid}.active{color:#a8e9c4;border-color:#315b43;background:#183025}.disabled{color:#f0d29c;border-color:#6a512e;background:#302719}.archived{color:#d2c5ef;border-color:#57466e;background:#282035}.action{color:var(--gold);font-weight:700}.empty{text-align:center;padding:35px;color:var(--muted)}
+.pagination{display:flex;justify-content:space-between;align-items:center;margin-top:16px;color:var(--muted);font-size:11px}.toast-stack{position:fixed;z-index:9999;top:18px;right:22px;width:min(420px,calc(100vw - 32px));display:grid;gap:8px;pointer-events:none}.toast{padding:13px 16px;border:1px solid #315b43;border-radius:9px;color:#a8e9c4;background:rgba(24,48,37,.97);box-shadow:0 12px 35px rgba(0,0,0,.35);font-size:13px;line-height:1.45;opacity:1;transform:translateY(0);transition:opacity .25s ease,transform .25s ease}.toast.warning{color:#f0d29c;border-color:#6a512e;background:rgba(48,39,25,.97)}.toast.danger{color:#f0aaaa;border-color:#713d3d;background:rgba(54,29,29,.97)}.toast.is-hiding{opacity:0;transform:translateY(-8px)}
+@media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr 1fr}.filters .search{grid-column:1/-1}}
+@media(max-width:480px){.stats{grid-template-columns:1fr 1fr}.topbar{align-items:flex-start;flex-direction:column}.filters{grid-template-columns:1fr}.filters .search{grid-column:auto}}
+</style></head>
+<body>
+<header class="topbar"><a class="brand" href="{{ url_for('admin.admin_dashboard') }}" aria-label="PLACEHUB dashboard"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="PLACEHUB"></a>
+<div class="top-right"><span>{{ account["name"] }} · Administrator</span><a class="btn" href="{{ url_for('admin.admin_dashboard') }}"><i class="fa-solid fa-arrow-left"></i> Dashboard</a></div></header>
+<main>
+<div class="heading"><div><span class="eyebrow">ADMINISTRATION / STUDENTS</span><h1>Student Management</h1><p class="sub">Search student records, review batch details and control student portal access.</p></div></div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}<div class="toast-stack" aria-live="polite" aria-atomic="true">{% set category, message = messages[-1] %}<div class="toast {{ category }}" role="status">{{ message }}</div></div>{% endif %}
+{% endwith %}
+<section class="stats">
+<div class="stat"><span>Total student records</span><strong>{{ counts["total"] or 0 }}</strong></div>
+<div class="stat"><span>Active accounts</span><strong>{{ counts["active"] or 0 }}</strong></div>
+<div class="stat"><span>Disabled accounts</span><strong>{{ counts["disabled"] or 0 }}</strong></div>
+<div class="stat"><span>Archived students</span><strong>{{ counts["archived"] or 0 }}</strong></div>
+</section>
+<section class="panel">
+<form method="GET" action="{{ url_for('admin.student_management') }}" class="filters">
+<div class="search"><label for="search">SEARCH STUDENTS</label><input id="search" name="search" value="{{ search }}" placeholder="Register number, name or email"></div>
+<div><label for="batch">ADMISSION BATCH</label><select id="batch" name="batch"><option value="">All batches</option>{% for item in batches %}<option value="{{ item['admission_year'] }}" {% if selected_batch|string == item['admission_year']|string %}selected{% endif %}>{{ item['admission_year'] }}–{{ item['admission_year']|int + 4 }}</option>{% endfor %}</select></div>
+<div><label for="department">DEPARTMENT</label><select id="department" name="department"><option value="">All departments</option>{% for item in departments %}<option value="{{ item['department'] }}" {% if selected_department == item['department'] %}selected{% endif %}>{{ item['department'] }}</option>{% endfor %}</select></div>
+<div><label for="status">ACCOUNT STATUS</label><select id="status" name="status"><option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option><option value="disabled" {% if selected_status == 'disabled' %}selected{% endif %}>Disabled</option><option value="archived" {% if selected_status == 'archived' %}selected{% endif %}>Archived</option></select></div>
+<button class="btn" type="submit"><i class="fa-solid fa-filter"></i> Apply</button>
+</form>
+<div class="table-wrap"><table><thead><tr><th>Student</th><th>Register Number</th><th>Department</th><th>Batch</th><th>Current Year</th><th>CGPA</th><th>Account</th><th></th></tr></thead><tbody>
+{% for student in students %}<tr>
+<td><strong>{{ student["name"] }}</strong><br><span class="muted">{{ student["email"] or "—" }}</span></td>
+<td>{{ student["register_number"] }}</td><td>{{ student["department"] or "—" }}</td>
+<td>{{ student["batch"] }}</td><td>{{ student["year_label"] }}</td><td>{{ student["cgpa"] if student["cgpa"] is not none else "—" }}</td>
+<td>{% if student["is_archived"] %}<span class="pill archived">Archived</span>{% elif student["is_active"] and student["login_enabled"] %}<span class="pill active">Active</span>{% else %}<span class="pill disabled">Disabled</span>{% endif %}</td>
+<td><a class="action" href="{{ url_for('admin.student_management_details', student_id=student['id']) }}">View details <i class="fa-solid fa-arrow-right"></i></a></td>
+</tr>{% else %}<tr><td colspan="8" class="empty">No student records match these filters.</td></tr>{% endfor %}
+</tbody></table></div>
+<div class="pagination"><span>{{ total }} record(s) · Page {{ page }} of {{ total_pages }}</span><span>{% if page > 1 %}<a class="btn" href="{{ url_for('admin.student_management',search=search,batch=selected_batch,department=selected_department,status=selected_status,page=page-1) }}">Previous</a>{% endif %} {% if page < total_pages %}<a class="btn" href="{{ url_for('admin.student_management',search=search,batch=selected_batch,department=selected_department,status=selected_status,page=page+1) }}">Next</a>{% endif %}</span></div>
+</section>
+</main>
+<script>
+document.querySelectorAll('.toast').forEach(function(toast){
+  window.setTimeout(function(){toast.classList.add('is-hiding');window.setTimeout(function(){toast.remove();},300);},3000);
+});
+</script>
+</body></html>

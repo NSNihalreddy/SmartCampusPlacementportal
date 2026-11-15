@@ -1,0 +1,356 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Resume</title>
+
+    <link rel="icon" type="image/png"
+          href="{{ url_for('static', filename='favicon.png') }}">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/sidebar-enhancements.css') }}">
+</head>
+
+<body class="student-dashboard-body">
+
+    <!-- Student Sidebar -->
+    <aside class="student-sidebar">
+
+        <button class="student-sidebar-collapse-btn"
+                type="button"
+                data-sidebar-toggle="student"
+                aria-label="Collapse sidebar"
+                aria-expanded="true"
+                title="Collapse sidebar">
+            <i class="fa-solid fa-angles-left"></i>
+        </button>
+
+        <div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}"
+                 alt="Smart Placement Portal">
+        </div>
+
+        <ul class="student-sidebar-nav">
+
+            <li class="{% if request.endpoint == 'student_dashboard' %}active{% endif %}">
+                <a href="{{ url_for('student_dashboard') }}">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li class="{% if request.endpoint == 'student_profile' %}active{% endif %}">
+                <a href="{{ url_for('student_profile') }}">
+                    <i class="fa-solid fa-user"></i>
+                    <span>My Profile</span>
+                </a>
+            </li>
+
+            <li class="{% if request.endpoint in ['job_opportunities', 'company_details'] %}active{% endif %}">
+                <a href="{{ url_for('job_opportunities') }}">
+                    <i class="fa-solid fa-briefcase"></i>
+                    <span>Job Opportunities</span>
+                </a>
+            </li>
+
+            <li class="{% if request.endpoint == 'student_applications' %}active{% endif %}">
+                <a href="{{ url_for('student_applications') }}">
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span>My Applications</span>
+                </a>
+            </li>
+
+            <li class="{% if request.endpoint == 'student_resume' %}active{% endif %}">
+                <a href="{{ url_for('student_resume') }}">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                    <span>Resume</span>
+                </a>
+            </li>
+
+            <li class="{% if request.endpoint == 'student_notifications' %}active{% endif %}">
+                <a href="{{ url_for('student_notifications') }}">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Notifications</span>
+
+                    {% if unread_notification_count > 0 %}
+                        <span class="notification-badge">
+                            {{ unread_notification_count }}
+                        </span>
+                    {% endif %}
+                </a>
+            </li>
+
+            <li class="student-sidebar-logout">
+                <a href="{{ url_for('logout') }}">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="student-main">
+
+        <main class="resume-page">
+
+            <!-- Header -->
+            <div class="resume-page-header">
+
+                <a href="{{ url_for('student_dashboard') }}"
+                   class="resume-back-btn">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+
+                <div class="resume-title">
+                    <h1>My Resume</h1>
+                    <p>Upload and manage your resume</p>
+                </div>
+
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+
+                {% if messages %}
+
+                    {% for category, message in messages %}
+
+                        <p class="resume-message {{ category }}">
+                            <i class="fa-solid fa-circle-check"></i>
+                            {{ message }}
+                        </p>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
+
+            <!-- Resume Card -->
+            <section class="resume-page-card">
+
+                <!-- Resume Icon -->
+                <div class="resume-icon">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+
+                <h2>Resume</h2>
+
+                <!-- Current Resume -->
+                {% if student['resume_path'] %}
+
+                    <p class="resume-status uploaded">
+                        <i class="fa-solid fa-circle-check"></i>
+                        Resume uploaded
+                    </p>
+
+                    <!-- View Resume -->
+                    <a href="{{ url_for('static', filename=student['resume_path']) }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="resume-view-btn">
+
+                        <i class="fa-solid fa-eye"></i>
+                        View Resume
+
+                    </a>
+
+                    <!-- ATS Score -->
+                    {% if student['ats_score'] is not none %}
+
+                        <div class="resume-score-container">
+
+                            <h3>Your Resume Score</h3>
+
+                            <div class="resume-score-circle"
+                                 data-score="{{ student['ats_score'] }}">
+
+                                <div class="resume-score-inner">
+
+                                    <span id="resumeScore">0</span>
+                                    <span>%</span>
+
+                                </div>
+
+                            </div>
+
+                            <p class="resume-score-label">
+                                ATS RESUME SCORE
+                            </p>
+
+                        </div>
+
+                    {% endif %}
+
+                {% else %}
+
+                    <!-- No Resume -->
+                    <p class="resume-status not-uploaded">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        No resume uploaded
+                    </p>
+
+                {% endif %}
+
+                <!-- Upload / Replace Resume -->
+                <form method="POST"
+                      enctype="multipart/form-data"
+                      class="resume-upload">
+
+                    <div class="resume-file-area">
+
+                        <input type="file"
+                               name="resume"
+                               id="resumeFile"
+                               accept=".pdf,application/pdf"
+                               required>
+
+                        <label for="resumeFile"
+                               class="resume-file-label">
+
+                            <i class="fa-solid fa-file-arrow-up"></i>
+                            Choose PDF Resume
+
+                        </label>
+
+                        <span id="selectedFileName"
+                              class="selected-file-name">
+                            No file selected
+                        </span>
+
+                    </div>
+
+                    <button type="submit">
+
+                        {% if student['resume_path'] %}
+
+                            <i class="fa-solid fa-rotate"></i>
+                            Replace Resume
+
+                        {% else %}
+
+                            <i class="fa-solid fa-upload"></i>
+                            Upload Resume
+
+                        {% endif %}
+
+                    </button>
+
+                </form>
+
+                <!-- Note -->
+                <p class="resume-note">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Only PDF files are allowed.
+                    Your ATS score will be recalculated after uploading.
+                </p>
+
+            </section>
+
+            <!-- Shared Footer -->
+            {% include "components/site_footer.html" %}
+
+        </main>
+
+    </div>
+
+    <!-- ATS Score Animation -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const circle = document.querySelector(".resume-score-circle");
+            const scoreText = document.getElementById("resumeScore");
+
+            if (!circle || !scoreText) {
+                return;
+            }
+
+            let target = parseFloat(circle.dataset.score);
+
+            if (isNaN(target)) {
+                return;
+            }
+
+            target = Math.max(0, Math.min(100, target));
+
+            const duration = 1200;
+            const startTime = performance.now();
+
+            function animate(currentTime) {
+
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                const current = Math.round(target * eased);
+
+                scoreText.textContent = current;
+
+                const degrees = current * 3.6;
+
+                circle.style.background = `conic-gradient(
+                    #A9BDD2 ${degrees}deg,
+                    rgba(255, 255, 255, 0.12) ${degrees}deg
+                )`;
+
+                if (progress < 1) {
+
+                    requestAnimationFrame(animate);
+
+                } else {
+
+                    scoreText.textContent = Math.round(target);
+
+                }
+            }
+
+            requestAnimationFrame(animate);
+
+        });
+    </script>
+
+    <!-- Selected File Name -->
+    <script>
+        const resumeFile = document.getElementById("resumeFile");
+        const selectedFileName = document.getElementById("selectedFileName");
+
+        if (resumeFile && selectedFileName) {
+
+            resumeFile.addEventListener("change", function () {
+
+                if (resumeFile.files.length > 0) {
+
+                    selectedFileName.textContent = resumeFile.files[0].name;
+
+                } else {
+
+                    selectedFileName.textContent = "No file selected";
+
+                }
+
+            });
+
+        }
+    </script>
+
+    <!-- Sidebar Script -->
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}" defer></script>
+
+</body>
+</html>

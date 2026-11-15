@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en"><head><link rel="icon" type="image/png" href="/static/favicon.png?v=3"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Details | PLACEHUB</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+:root{--bg:#090b0e;--panel:#151719;--border:#303236;--text:#f3f0eb;--muted:#a9a7a2;--gold:#dfb98f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Segoe UI",Arial,sans-serif}a{color:inherit;text-decoration:none}
+header{padding:17px clamp(18px,5vw,64px);background:#141618;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}.brand{display:inline-flex;align-items:center;min-height:42px}.brand img{display:block;width:178px;max-height:48px;object-fit:contain;object-position:left center}
+.btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border:1px solid #51432f;border-radius:7px;color:var(--gold);background:#28231e;font-size:12px;cursor:pointer}
+main{max-width:1300px;margin:auto;padding:38px clamp(16px,4vw,56px)}.eyebrow{font-size:10px;letter-spacing:3px;color:var(--gold);font-weight:800}h1{font:400 clamp(29px,4vw,42px) Georgia,serif;margin:12px 0 8px}.muted{color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:24px 0}.card{padding:18px;border:1px solid var(--border);border-radius:10px;background:linear-gradient(145deg,#191b1d,#111315)}.card small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.8px}.card strong{display:block;margin-top:8px;font-size:15px;overflow-wrap:anywhere}.section{margin-top:20px;padding:20px;border:1px solid var(--border);border-radius:10px;background:#141618}.section h2{font:400 23px Georgia,serif;margin:0 0 16px}.details{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.field small{display:block;color:var(--muted);font-size:10px;margin-bottom:6px}.field strong{font-size:13px;overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;min-width:700px}th{text-align:left;color:var(--gold);font-size:10px;padding:12px;border-bottom:1px solid #494039}td{font-size:12px;padding:13px 12px;border-bottom:1px solid #292c2f}.table-wrap{overflow-x:auto}.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.warning{color:#f0d29c;font-size:11px;line-height:1.6;margin-top:12px}.status{color:#a8e9c4}.danger{color:#f0aaaa}
+.toast-stack{position:fixed;z-index:9999;top:18px;right:22px;width:min(420px,calc(100vw - 32px));display:grid;gap:8px;pointer-events:none}.toast{padding:13px 16px;border:1px solid #315b43;border-radius:9px;color:#a8e9c4;background:rgba(24,48,37,.97);box-shadow:0 12px 35px rgba(0,0,0,.35);font-size:13px;line-height:1.45;opacity:1;transform:translateY(0);transition:opacity .25s ease,transform .25s ease}.toast.warning{color:#f0d29c;border-color:#6a512e;background:rgba(48,39,25,.97)}.toast.danger{color:#f0aaaa;border-color:#713d3d;background:rgba(54,29,29,.97)}.toast.is-hiding{opacity:0;transform:translateY(-8px)}
+
+/* Confirmation dialog styled consistently with the Faculty confirmation modal */
+.modal-backdrop{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.78);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.modal-backdrop.is-open{display:flex}
+.confirm-modal{width:min(100%,564px);padding:31px;border:1px solid #51432f;border-radius:17px;background:linear-gradient(145deg,#191b1d,#121416);box-shadow:0 24px 80px rgba(0,0,0,.55);animation:modalIn .18s ease-out}
+@keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.confirm-icon{width:53px;height:53px;display:flex;align-items:center;justify-content:center;border:1px solid #704447;border-radius:14px;background:#321f22;color:#e8a0a0;font-size:21px;margin-bottom:19px}
+.confirm-modal h2{font:400 29px Georgia,serif;margin:0 0 14px;color:var(--text)}
+.confirm-modal .confirm-copy{font-size:13px;color:#b9b5af;line-height:1.6;margin:0 0 17px}
+.confirm-warning{padding:13px 15px;border-left:3px solid var(--gold);border-radius:5px;background:#242321;color:#d8c8b5;font-size:12px;line-height:1.7}
+.confirm-actions{display:flex;justify-content:flex-end;gap:11px;margin-top:27px}
+.confirm-actions button{min-width:120px;padding:13px 17px;border-radius:9px;font-weight:700;font-size:12px;cursor:pointer}
+.cancel-confirm{border:1px solid #45474a;background:#252729;color:#e5e3e0}
+.danger-confirm{border:1px solid #a65c60;background:#93494d;color:#fff}
+body.modal-open{overflow:hidden}
+@media(max-width:520px){.confirm-modal{padding:23px}.confirm-modal h2{font-size:25px}.confirm-actions button{min-width:0;flex:1}}
+@media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.details{grid-template-columns:1fr 1fr}}@media(max-width:480px){.grid,.details{grid-template-columns:1fr}header{gap:10px;flex-wrap:wrap}}
+</style></head><body>
+<header><a class="brand" href="{{ url_for('admin.admin_dashboard') }}" aria-label="PLACEHUB dashboard"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="PLACEHUB"></a><a class="btn" href="{{ url_for('admin.student_management') }}"><i class="fa-solid fa-arrow-left"></i> Student Management</a></header>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}<div class="toast-stack" aria-live="polite" aria-atomic="true">{% set category, message = messages[-1] %}<div class="toast {{ category }}" role="status">{{ message }}</div></div>{% endif %}
+{% endwith %}
+<main><span class="eyebrow">STUDENT RECORD / PLACEMENT PROFILE</span><h1>{{ student["name"] }}</h1><p class="muted">{{ student["register_number"] }} · {{ student["department"] or "Department not assigned" }}</p>
+<section class="grid">
+<div class="card"><small>Admission Batch</small><strong>{{ student["batch"] }}</strong></div>
+<div class="card"><small>Academic Year</small><strong>{{ student["year_label"] }}</strong></div>
+<div class="card"><small>Placement Applications</small><strong>{{ summary["total"] or 0 }}</strong></div>
+<div class="card"><small>Selected</small><strong>{{ summary["selected"] or 0 }}</strong></div>
+<div class="card"><small>In Progress</small><strong>{{ summary["in_progress"] or 0 }}</strong></div>
+<div class="card"><small>Rejected</small><strong>{{ summary["rejected"] or 0 }}</strong></div>
+</section>
+<section class="section"><h2>Student Information</h2><div class="details">
+<div class="field"><small>Register Number</small><strong>{{ student["register_number"] }}</strong></div>
+<div class="field"><small>Email</small><strong>{{ student["email"] or "—" }}</strong></div>
+<div class="field"><small>Department</small><strong>{{ student["department"] or "—" }}</strong></div>
+<div class="field"><small>CGPA</small><strong>{{ student["cgpa"] if student["cgpa"] is not none else "—" }}</strong></div>
+<div class="field"><small>Admission Year</small><strong>{{ student["admission_year"] or "Not assigned" }}</strong></div>
+<div class="field"><small>Passing-out Year</small><strong>{{ student["passing_out_year"] or "—" }}</strong></div>
+<div class="field"><small>Date of Birth</small><strong>{{ student["date_of_birth"] or "—" }}</strong></div>
+<div class="field"><small>Resume</small><strong>{{ "Uploaded" if student["resume_path"] else "Not uploaded" }}</strong></div>
+<div class="field"><small>Account Status</small><strong>{% if student["is_archived"] %}<span class="danger">Archived</span>{% elif student["is_active"] and student["login_enabled"] %}<span class="status">Active</span>{% else %}<span class="danger">Disabled</span>{% endif %}</strong></div>
+</div></section>
+<section class="section"><h2>Account Access</h2><div class="actions">
+{% if not student["is_archived"] %}
+<form id="studentAccessForm" method="POST" action="{{ url_for('admin.toggle_student_access', student_id=student['id']) }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="enabled" value="{{ 0 if student['is_active'] and student['login_enabled'] else 1 }}">
+{% if student["is_active"] and student["login_enabled"] %}
+<button class="btn" type="button" id="openDisableStudentModal">Disable Student Login</button>
+{% else %}
+<button class="btn" type="submit">Enable Student Login</button>
+{% endif %}
+</form>
+{% else %}<span class="danger">Archived accounts cannot be re-enabled.</span>{% endif %}
+</div><p class="warning">Disabling access revokes the student's current portal session. Student records and placement history are retained.</p></section>
+<section class="section"><h2>Placement Application History</h2><div class="table-wrap"><table><thead><tr><th>Company</th><th>Role</th><th>Package</th><th>Location</th><th>Applied Date</th><th>Status</th></tr></thead><tbody>
+{% for item in applications %}<tr><td>{{ item["company_name"] or "Company record unavailable" }}</td><td>{{ item["job_role"] or "—" }}</td><td>{{ item["package"] or "—" }}</td><td>{{ item["location"] or "—" }}</td><td>{{ item["applied_date"] or "—" }}</td><td>{{ item["status"] or "—" }}</td></tr>{% else %}<tr><td colspan="6" class="muted">No placement applications found for this student.</td></tr>{% endfor %}
+</tbody></table></div></section>
+
+</main>
+<div class="modal-backdrop" id="disableStudentModal" aria-hidden="true">
+  <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="disableStudentTitle" aria-describedby="disableStudentDescription">
+    <div class="confirm-icon"><i class="fa-solid fa-user-lock" aria-hidden="true"></i></div>
+    <h2 id="disableStudentTitle">Disable Student Account?</h2>
+    <p class="confirm-copy" id="disableStudentDescription">
+      Are you sure you want to disable {{ student["name"] }} ({{ student["register_number"] }})?
+    </p>
+    <div class="confirm-warning">
+      This account will no longer be able to sign in. Existing sessions will be revoked.
+      The student record and placement history will be retained.
+    </div>
+    <div class="confirm-actions">
+      <button type="button" class="cancel-confirm" id="cancelDisableStudent">Cancel</button>
+      <button type="button" class="danger-confirm" id="confirmDisableStudent">Disable Account</button>
+    </div>
+  </section>
+</div>
+<script>
+(function(){
+  const modal = document.getElementById('disableStudentModal');
+  const openButton = document.getElementById('openDisableStudentModal');
+  const cancelButton = document.getElementById('cancelDisableStudent');
+  const confirmButton = document.getElementById('confirmDisableStudent');
+  const form = document.getElementById('studentAccessForm');
+
+  if(!modal || !openButton || !cancelButton || !confirmButton || !form) return;
+
+  function closeModal(){
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden','true');
+    document.body.classList.remove('modal-open');
+    openButton.focus();
+  }
+
+  function openModal(){
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden','false');
+    document.body.classList.add('modal-open');
+    cancelButton.focus();
+  }
+
+  openButton.addEventListener('click', openModal);
+  cancelButton.addEventListener('click', closeModal);
+  confirmButton.addEventListener('click', function(){
+    form.requestSubmit();
+  });
+  modal.addEventListener('click', function(event){
+    if(event.target === modal) closeModal();
+  });
+  document.addEventListener('keydown', function(event){
+    if(event.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+  });
+})();
+document.querySelectorAll('.toast').forEach(function(toast){
+  window.setTimeout(function(){toast.classList.add('is-hiding');window.setTimeout(function(){toast.remove();},300);},3000);
+});
+</script>
+</body></html>

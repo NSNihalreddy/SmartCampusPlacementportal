@@ -1,0 +1,17 @@
+<footer class="site-footer" role="contentinfo">
+    <div class="site-footer-inner">
+        <span class="site-footer-copyright">
+            © 2026 Smart Campus Placement Portal
+        </span>
+
+        <span class="site-footer-credit">
+            Developed by <strong>N.S. Nihal Reddy &amp; Team</strong>
+        </span>
+
+        {% if request.endpoint == 'about' %}
+    <span class="site-footer-current">About the Portal</span>
+{% else %}
+    <a href="{{ url_for('about') }}">About the Portal</a>
+{% endif %}
+    </div>
+</footer>

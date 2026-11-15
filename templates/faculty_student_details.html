@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="icon" type="image/png" href="/static/favicon.png?v=3">
+
+    <title>Student Record</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/sidebar-enhancements.css') }}"
+    >
+
+    <style>
+        .faculty-student-detail-page {
+            --record-content-max: 1250px;
+        }
+
+        .faculty-student-detail-page .faculty-main {
+            width: auto;
+            max-width: none;
+            min-width: 0;
+            margin-left: 0;
+            padding: 30px clamp(20px, 3vw, 42px);
+            box-sizing: border-box;
+        }
+
+        .faculty-student-detail-page .faculty-page-header {
+            width: 100%;
+            max-width: var(--record-content-max);
+            margin: 0 auto 28px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .faculty-student-detail-page .faculty-page-header > div {
+            min-width: 0;
+            text-align: right;
+        }
+
+        .faculty-student-detail-page .faculty-page-header h1 {
+            margin: 8px 0 12px;
+            font-size: clamp(30px, 3.2vw, 48px);
+            line-height: 1.15;
+            overflow-wrap: anywhere;
+        }
+
+        .faculty-student-detail-page .faculty-back-btn {
+            justify-self: start;
+            align-self: start;
+            white-space: nowrap;
+            margin: 0;
+        }
+
+        .faculty-student-detail-page .faculty-panel {
+            width: 100%;
+            max-width: var(--record-content-max);
+            min-width: 0;
+            margin: 0 auto 22px;
+            padding: clamp(22px, 2.5vw, 34px);
+            box-sizing: border-box;
+        }
+
+        .faculty-student-detail-page .faculty-panel-header {
+            margin-bottom: 24px;
+        }
+
+        .faculty-student-detail-page .faculty-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            align-items: stretch;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .faculty-student-detail-page .faculty-stat-card {
+            min-width: 0;
+            min-height: 150px;
+            padding: 24px;
+            box-sizing: border-box;
+            overflow: hidden;
+            overflow-wrap: anywhere;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .faculty-student-detail-page .faculty-stat-card > span {
+            display: block;
+            min-width: 0;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+
+        .faculty-student-detail-page .faculty-stat-card strong {
+            display: block;
+            min-width: 0;
+            line-height: 1.4;
+            font-size: clamp(17px, 1.5vw, 24px);
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
+
+        .faculty-student-detail-page .faculty-stat-grid:has(.faculty-stat-icon) {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .faculty-student-detail-page
+        .faculty-stat-grid:has(.faculty-stat-icon) .faculty-stat-card {
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 14px;
+        }
+
+        .faculty-student-detail-page .faculty-stat-icon {
+            flex: 0 0 54px;
+            width: 54px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+        }
+
+        .faculty-student-detail-page .faculty-stat-card > div {
+            min-width: 0;
+        }
+
+        .faculty-student-detail-page .faculty-table-wrapper {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .faculty-student-detail-page .faculty-table {
+            width: 100%;
+            min-width: 720px;
+        }
+
+        .faculty-student-detail-page .faculty-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px 24px;
+        }
+
+        .faculty-student-detail-page .faculty-form-group {
+            min-width: 0;
+        }
+
+        .faculty-student-detail-page .faculty-form-group input,
+        .faculty-student-detail-page .faculty-form-group select,
+        .faculty-student-detail-page .faculty-form-group textarea {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Confirmation popup */
+        .faculty-message-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, .72);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
+        .faculty-message-popup {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            padding: 35px 30px 30px;
+            border-radius: 18px;
+            background: #171717;
+            border: 1px solid rgba(255,255,255,.12);
+            box-shadow: 0 25px 70px rgba(0,0,0,.5);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .faculty-message-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255,255,255,.06);
+            color: #a9bdd2;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .faculty-message-icon {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(169,189,210,.12);
+            border: 1px solid rgba(169,189,210,.25);
+            color: #a9bdd2;
+            font-size: 28px;
+        }
+
+        .faculty-message-icon.warning {
+            background: rgba(220,80,80,.12);
+            border-color: rgba(220,80,80,.3);
+            color: #ff7070;
+        }
+
+        .faculty-message-icon.success {
+            background: rgba(75,226,140,.12);
+            border-color: rgba(75,226,140,.3);
+            color: #6ee7a0;
+        }
+
+        .faculty-message-popup h2 {
+            margin: 0 0 14px;
+            color: #fff;
+            font-size: 24px;
+        }
+
+        .faculty-message-popup p {
+            margin: 0;
+            color: #c7d1db;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .faculty-message-actions,
+        .faculty-message-confirm-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .faculty-message-ok,
+        .faculty-message-cancel,
+        .faculty-message-confirm {
+            min-width: 120px;
+            min-height: 46px;
+            padding: 0 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        .faculty-message-ok {
+            border: none;
+            background: #a9bdd2;
+            color: #111820;
+        }
+
+        .faculty-message-cancel {
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.06);
+            color: #c7d1db;
+        }
+
+        .faculty-message-confirm {
+            border: 1px solid rgba(75,226,140,.3);
+            background: rgba(75,226,140,.14);
+            color: #6ee7a0;
+        }
+
+        .faculty-message-confirm-actions {
+            width: 100%;
+        }
+
+        @media (max-width: 1100px) {
+            .faculty-student-detail-page .faculty-stat-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .faculty-student-detail-page
+            .faculty-stat-grid:has(.faculty-stat-icon) {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 760px) {
+            .faculty-student-detail-page .faculty-main {
+                padding: 20px 16px;
+            }
+
+            .faculty-student-detail-page .faculty-page-header {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 18px;
+            }
+
+            .faculty-student-detail-page .faculty-page-header > div {
+                text-align: left;
+            }
+
+            .faculty-student-detail-page .faculty-stat-grid,
+            .faculty-student-detail-page
+            .faculty-stat-grid:has(.faculty-stat-icon) {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .faculty-student-detail-page .faculty-form-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .faculty-student-detail-page .faculty-stat-grid,
+            .faculty-student-detail-page
+            .faculty-stat-grid:has(.faculty-stat-icon) {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .faculty-message-actions,
+            .faculty-message-confirm-actions {
+                flex-direction: column;
+            }
+
+            .faculty-message-ok,
+            .faculty-message-cancel,
+            .faculty-message-confirm {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body class="faculty-dashboard-body faculty-student-detail-page">
+
+<!-- ================= FACULTY SIDEBAR ================= -->
+
+<aside class="faculty-sidebar" id="facultySidebar">
+
+    <div class="faculty-sidebar-brand">
+        <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Vel Tech Smart Placement Portal"
+        >
+
+        <button
+            class="sidebar-collapse-btn"
+            type="button"
+            data-sidebar-toggle="faculty"
+            aria-label="Collapse sidebar"
+            aria-expanded="true"
+            title="Collapse sidebar"
+        >
+            <i class="fa-solid fa-angles-left"></i>
+        </button>
+    </div>
+
+    <div class="faculty-identity">
+        <div class="faculty-avatar">
+            <i class="fa-solid fa-user-tie"></i>
+        </div>
+
+        <div class="faculty-identity-text">
+            <strong>
+                {{ session.get('faculty_name', 'Faculty') }}
+            </strong>
+
+            <span>
+                {{ session.get(
+                    'faculty_role',
+                    faculty_role if faculty_role is defined else 'Faculty'
+                ) }}
+            </span>
+        </div>
+    </div>
+
+    <nav class="faculty-nav" aria-label="Faculty navigation">
+
+        <!-- Dashboard -->
+        <a
+            href="{{ url_for('faculty_dashboard') }}"
+            class="faculty-nav-link {% if request.endpoint == 'faculty_dashboard' %}active{% endif %}"
+            title="Dashboard"
+        >
+            <i class="fa-solid fa-house"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <!-- Manage Group -->
+        <section class="sidebar-group {% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students', 'faculty_management'] %}is-open{% endif %}">
+
+            <button
+                type="button"
+                class="faculty-nav-link sidebar-group-toggle"
+                aria-expanded="{% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students', 'faculty_management'] %}true{% else %}false{% endif %}"
+                title="Manage"
+            >
+                <i class="fa-solid fa-users-gear"></i>
+                <span>Manage</span>
+                <i class="fa-solid fa-chevron-down group-chevron"></i>
+            </button>
+
+            <div class="sidebar-submenu">
+
+                <a
+                    href="{{ url_for('faculty_students') }}"
+                    class="faculty-nav-link {% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students'] %}active{% endif %}"
+                    title="Students"
+                >
+                    <i class="fa-solid fa-users"></i>
+                    <span>Students</span>
+                </a>
+
+                {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                <a
+                    href="{{ url_for('faculty_management') }}"
+                    class="faculty-nav-link {% if request.endpoint == 'faculty_management' %}active{% endif %}"
+                    title="Faculty Management"
+                >
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span>Faculty Management</span>
+                </a>
+                {% endif %}
+
+            </div>
+        </section>
+
+        <!-- Placement Group -->
+        <section class="sidebar-group {% if request.endpoint in ['faculty_companies', 'faculty_applications', 'faculty_selection', 'faculty_add_company', 'edit_company'] %}is-open{% endif %}">
+
+            <button
+                type="button"
+                class="faculty-nav-link sidebar-group-toggle"
+                aria-expanded="{% if request.endpoint in ['faculty_companies', 'faculty_applications', 'faculty_selection', 'faculty_add_company', 'edit_company'] %}true{% else %}false{% endif %}"
+                title="Placement"
+            >
+                <i class="fa-solid fa-building"></i>
+                <span>Placement</span>
+                <i class="fa-solid fa-chevron-down group-chevron"></i>
+            </button>
+
+            <div class="sidebar-submenu">
+
+                {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                <a
+                    href="{{ url_for('faculty_companies') }}"
+                    class="faculty-nav-link {% if request.endpoint in ['faculty_companies', 'faculty_add_company', 'edit_company'] %}active{% endif %}"
+                    title="Companies"
+                >
+                    <i class="fa-solid fa-building"></i>
+                    <span>Companies</span>
+                </a>
+                {% endif %}
+
+                <a
+                    href="{{ url_for('faculty_applications') }}"
+                    class="faculty-nav-link {% if request.endpoint == 'faculty_applications' %}active{% endif %}"
+                    title="Applications"
+                >
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span>Applications</span>
+                </a>
+
+                {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                <a
+                    href="{{ url_for('faculty_selection') }}"
+                    class="faculty-nav-link {% if request.endpoint == 'faculty_selection' %}active{% endif %}"
+                    title="Selection"
+                >
+                    <i class="fa-solid fa-user-check"></i>
+                    <span>Selection</span>
+                </a>
+                {% endif %}
+
+            </div>
+        </section>
+
+        <!-- Notifications Group -->
+        <section class="sidebar-group {% if request.endpoint in ['faculty_notifications', 'faculty_send_announcement'] %}is-open{% endif %}">
+
+            <button
+                type="button"
+                class="faculty-nav-link sidebar-group-toggle"
+                aria-expanded="{% if request.endpoint in ['faculty_notifications', 'faculty_send_announcement'] %}true{% else %}false{% endif %}"
+                title="Notifications"
+            >
+                <i class="fa-solid fa-bell"></i>
+                <span>Notifications</span>
+                <i class="fa-solid fa-chevron-down group-chevron"></i>
+            </button>
+
+            <div class="sidebar-submenu">
+
+                <!-- Received Messages -->
+                <a
+                    href="{{ url_for('faculty_notifications') }}"
+                    class="faculty-nav-link {% if request.endpoint == 'faculty_notifications' %}active{% endif %}"
+                    title="Received Messages"
+                >
+                    <i class="fa-solid fa-inbox"></i>
+                    <span>Received Messages</span>
+
+                    {% if faculty_unread_notifications > 0 %}
+                    <span class="notification-badge">
+                        {{ faculty_unread_notifications }}
+                    </span>
+                    {% endif %}
+                </a>
+
+                <!-- Send Announcements -->
+                {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                <a
+                    href="{{ url_for('faculty_send_announcement') }}"
+                    class="faculty-nav-link {% if request.endpoint == 'faculty_send_announcement' %}active{% endif %}"
+                    title="Send Announcements"
+                >
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <span>Send Announcements</span>
+                </a>
+                {% endif %}
+
+            </div>
+        </section>
+
+        <!-- Reports is separate from Notifications -->
+        <a
+            href="{{ url_for('faculty_reports') }}"
+            class="faculty-nav-link {% if request.endpoint == 'faculty_reports' %}active{% endif %}"
+            title="Placement Reports"
+        >
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Reports</span>
+        </a>
+
+    </nav>
+
+    <!-- Bottom Navigation -->
+    <div class="faculty-sidebar-bottom">
+
+        <a
+            href="{{ url_for('faculty_my_profile') }}"
+            class="faculty-nav-link {% if request.endpoint == 'faculty_my_profile' %}active{% endif %}"
+            title="My Profile"
+        >
+            <i class="fa-solid fa-user"></i>
+            <span>My Profile</span>
+        </a>
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="faculty-nav-link faculty-logout"
+            title="Logout"
+        >
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </a>
+
+    </div>
+
+</aside>
+
+<!-- ================= STUDENT RECORD CONTENT ================= -->
+
+<main class="faculty-main">
+
+    <div class="faculty-page-header">
+
+        <a href="{{ url_for('faculty_students') }}" class="faculty-back-btn">
+            <i class="fa-solid fa-arrow-left"></i> Students
+        </a>
+
+        <div>
+            <p class="faculty-label">STUDENT RECORD</p>
+            <h1>{{ student['name'] }}</h1>
+            <p>Complete student placement record</p>
+        </div>
+
+    </div>
+
+    <!-- Student Details -->
+    <section class="faculty-panel">
+
+        <div class="faculty-panel-header">
+            <div>
+                <h2>Student Details</h2>
+                <p>Academic and personal information</p>
+            </div>
+        </div>
+
+        <div class="faculty-stat-grid">
+
+            <div class="faculty-stat-card">
+                <span>Register Number</span>
+                <strong>{{ student['register_number'] }}</strong>
+            </div>
+
+            <div class="faculty-stat-card">
+                <span>Email</span>
+                <strong>{{ student['email'] }}</strong>
+            </div>
+
+            <div class="faculty-stat-card">
+                <span>Department</span>
+                <strong>{{ student['department'] }}</strong>
+            </div>
+
+            <div class="faculty-stat-card">
+                <span>Year</span>
+                <strong>{{ student['current_year_label'] }}</strong><small>{{ student['batch'] }}</small>
+            </div>
+
+            <div class="faculty-stat-card">
+                <span>CGPA</span>
+                <strong>{{ student['cgpa'] }}</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Placement Statistics -->
+    <section class="faculty-panel">
+
+        <div class="faculty-panel-header">
+            <div>
+                <h2>Placement Statistics</h2>
+                <p>Student placement activity</p>
+            </div>
+        </div>
+
+        <div class="faculty-stat-grid">
+
+            <div class="faculty-stat-card">
+                <div class="faculty-stat-icon">
+                    <i class="fa-solid fa-building"></i>
+                </div>
+                <div>
+                    <span>Companies Applied</span>
+                    <strong>{{ companies_applied }}</strong>
+                </div>
+            </div>
+
+            <div class="faculty-stat-card">
+                <div class="faculty-stat-icon">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
+                <div>
+                    <span>Shortlisted</span>
+                    <strong>{{ shortlisted }}</strong>
+                </div>
+            </div>
+
+            <div class="faculty-stat-card">
+                <div class="faculty-stat-icon">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <div>
+                    <span>Interviews</span>
+                    <strong>{{ interviews }}</strong>
+                </div>
+            </div>
+
+            <div class="faculty-stat-card">
+                <div class="faculty-stat-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <span>Selected</span>
+                    <strong>{{ selected }}</strong>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Placement Restriction -->
+    <section class="faculty-panel">
+
+        <div class="faculty-panel-header">
+            <div>
+                <h2>Placement Restriction</h2>
+                <p>Control this student's placement application access.</p>
+            </div>
+        </div>
+
+        {% if restriction %}
+
+        <div class="student-restriction-active">
+
+            <div class="restriction-details">
+
+                {% if restriction['restriction_type'] == 'Permanent' %}
+
+                    <strong>
+                        <i class="fa-solid fa-lock"></i>
+                        Permanently Blocked
+                    </strong>
+
+                    <p>
+                        This student is permanently blocked from applying
+                        for placement opportunities.
+                    </p>
+
+                {% else %}
+
+                    <strong>
+                        <i class="fa-solid fa-ban"></i>
+                        Temporary Block
+                    </strong>
+
+                    <p>
+                        {{ restriction['start_date'] }}
+                        →
+                        {{ restriction['end_date'] }}
+                    </p>
+
+                {% endif %}
+
+                <small>
+                    Reason: {{ restriction['reason'] }}
+                </small>
+
+            </div>
+
+            <button
+                type="button"
+                class="faculty-unblock-btn"
+                onclick="showUnblockConfirmation()"
+            >
+                <i class="fa-solid fa-unlock"></i>
+                Unblock Student
+            </button>
+
+        </div>
+
+        {% else %}
+
+        <button
+            type="button"
+            class="faculty-submit-btn"
+            id="blockStudentBtn"
+        >
+            <i class="fa-solid fa-ban"></i>
+            Block Student
+        </button>
+
+        <div
+            id="blockStudentForm"
+            class="student-block-form"
+            style="display:none;"
+        >
+
+            <form
+                method="POST"
+                action="{{ url_for('block_student', student_id=student['id']) }}"
+            >
+
+                <input
+                    type="hidden"
+                    name="restriction_type"
+                    value="Temporary"
+                    id="restrictionType"
+                >
+
+                <div class="faculty-form-grid">
+
+                    <div class="faculty-form-group">
+                        <label for="start_date">Start Date</label>
+                        <input
+                            type="date"
+                            name="start_date"
+                            id="start_date"
+                            required
+                        >
+                    </div>
+
+                    <div class="faculty-form-group">
+                        <label for="end_date">End Date</label>
+                        <input
+                            type="date"
+                            name="end_date"
+                            id="end_date"
+                            required
+                        >
+                    </div>
+
+                    <div
+                        class="faculty-form-group"
+                        style="grid-column:1/-1;"
+                    >
+                        <label for="block_reason">Reason</label>
+                        <textarea
+                            id="block_reason"
+                            name="reason"
+                            rows="4"
+                            placeholder="Enter reason for blocking this student"
+                            required
+                        ></textarea>
+                    </div>
+
+                </div>
+
+                <div class="student-block-actions">
+
+                    <button
+                        type="submit"
+                        class="faculty-submit-btn"
+                        id="temporaryBlockBtn"
+                    >
+                        <i class="fa-solid fa-calendar-check"></i>
+                        Apply Temporary Block
+                    </button>
+
+                    <button
+                        type="button"
+                        class="faculty-permanent-btn"
+                        id="permanentBlockBtn"
+                    >
+                        <i class="fa-solid fa-lock"></i>
+                        Block Permanently
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    <!-- Application History -->
+    <section class="faculty-panel">
+
+        <div class="faculty-panel-header">
+            <div>
+                <h2>Application History</h2>
+                <p>All placement applications submitted by this student</p>
+            </div>
+        </div>
+
+        <div class="faculty-table-wrapper">
+
+            <table class="faculty-table">
+
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Job Role</th>
+                        <th>Package</th>
+                        <th>Applied Date</th>
+                        <th>Resume Score</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for application in applications %}
+
+                    <tr>
+                        <td>
+                            <strong>{{ application['company_name'] }}</strong>
+                        </td>
+
+                        <td>{{ application['job_role'] }}</td>
+
+                        <td>{{ application['package'] }} LPA</td>
+
+                        <td>{{ application['applied_date'] }}</td>
+
+                        <td>
+                            {% if application['resume_score'] is not none %}
+                                {{ application['resume_score'] }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+
+                        <td>{{ application['status'] }}</td>
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="6" class="faculty-empty">
+                            No applications found for this student.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <!-- Shared Footer -->
+    {% include 'components/site_footer.html' %}
+
+</main>
+
+<!-- ================= CONFIRMATION / MESSAGE POPUP ================= -->
+
+<div
+    id="facultyMessagePopup"
+    class="faculty-message-overlay"
+    style="display:none;"
+>
+    <div class="faculty-message-popup">
+
+        <button
+            type="button"
+            class="faculty-message-close"
+            onclick="closeFacultyMessage()"
+            aria-label="Close popup"
+        >
+            ×
+        </button>
+
+        <div id="facultyMessageIcon" class="faculty-message-icon">
+            <i class="fa-solid fa-circle-info"></i>
+        </div>
+
+        <h2 id="facultyMessageTitle">Message</h2>
+
+        <p id="facultyMessageText"></p>
+
+        <div
+            id="facultyMessageActions"
+            class="faculty-message-actions"
+        >
+            <button
+                type="button"
+                class="faculty-message-ok"
+                onclick="closeFacultyMessage()"
+            >
+                OK
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script>
+const blockButton = document.getElementById("blockStudentBtn");
+const blockForm = document.getElementById("blockStudentForm");
+const permanentButton = document.getElementById("permanentBlockBtn");
+const temporaryBlockButton = document.getElementById("temporaryBlockBtn");
+
+const restrictionType = document.getElementById("restrictionType");
+const startDate = document.getElementById("start_date");
+const endDate = document.getElementById("end_date");
+const reason = document.getElementById("block_reason");
+
+const facultyMessagePopup = document.getElementById("facultyMessagePopup");
+const facultyMessageTitle = document.getElementById("facultyMessageTitle");
+const facultyMessageText = document.getElementById("facultyMessageText");
+const facultyMessageIcon = document.getElementById("facultyMessageIcon");
+const facultyMessageActions = document.getElementById("facultyMessageActions");
+
+
+function closeFacultyMessage() {
+    facultyMessagePopup.style.display = "none";
+}
+
+
+function showFacultyMessage(title, message, type = "info") {
+    facultyMessageTitle.textContent = title;
+    facultyMessageText.textContent = message;
+
+    facultyMessageIcon.className = "faculty-message-icon";
+
+    if (type === "warning") {
+        facultyMessageIcon.classList.add("warning");
+        facultyMessageIcon.innerHTML =
+            '<i class="fa-solid fa-triangle-exclamation"></i>';
+
+    } else if (type === "success") {
+        facultyMessageIcon.classList.add("success");
+        facultyMessageIcon.innerHTML =
+            '<i class="fa-solid fa-circle-check"></i>';
+
+    } else {
+        facultyMessageIcon.innerHTML =
+            '<i class="fa-solid fa-circle-info"></i>';
+    }
+
+    facultyMessageActions.innerHTML =
+        '<button type="button" class="faculty-message-ok" onclick="closeFacultyMessage()">OK</button>';
+
+    facultyMessagePopup.style.display = "flex";
+}
+
+
+// Show the placement restriction form.
+if (blockButton) {
+    blockButton.addEventListener("click", () => {
+        blockForm.style.display = "block";
+        blockButton.style.display = "none";
+    });
+}
+
+
+// Validate temporary block form.
+if (temporaryBlockButton) {
+    temporaryBlockButton.addEventListener("click", event => {
+
+        if (!startDate.value) {
+            event.preventDefault();
+
+            showFacultyMessage(
+                "Start Date Required",
+                "Please select a start date.",
+                "warning"
+            );
+
+            startDate.focus();
+            return;
+        }
+
+        if (!endDate.value) {
+            event.preventDefault();
+
+            showFacultyMessage(
+                "End Date Required",
+                "Please select an end date.",
+                "warning"
+            );
+
+            endDate.focus();
+            return;
+        }
+
+        if (endDate.value < startDate.value) {
+            event.preventDefault();
+
+            showFacultyMessage(
+                "Invalid Date Range",
+                "The end date cannot be before the start date.",
+                "warning"
+            );
+
+            endDate.focus();
+            return;
+        }
+
+        if (!reason.value.trim()) {
+            event.preventDefault();
+
+            showFacultyMessage(
+                "Reason Required",
+                "Please enter a reason.",
+                "warning"
+            );
+
+            reason.focus();
+        }
+    });
+}
+
+
+// Permanent block confirmation.
+if (permanentButton) {
+    permanentButton.addEventListener("click", () => {
+
+        if (!reason.value.trim()) {
+            showFacultyMessage(
+                "Reason Required",
+                "Please enter a reason before permanently blocking this student.",
+                "warning"
+            );
+
+            reason.focus();
+            return;
+        }
+
+        facultyMessageTitle.textContent = "Permanently Block Student?";
+
+        facultyMessageText.textContent =
+            "Are you sure you want to permanently block this student from placement applications?";
+
+        facultyMessageIcon.className =
+            "faculty-message-icon warning";
+
+        facultyMessageIcon.innerHTML =
+            '<i class="fa-solid fa-lock"></i>';
+
+        facultyMessageActions.innerHTML = `
+            <button
+                type="button"
+                class="faculty-message-cancel"
+                onclick="closeFacultyMessage()"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                class="faculty-message-confirm"
+                onclick="submitPermanentBlock()"
+            >
+                <i class="fa-solid fa-lock"></i>
+                Yes, Block
+            </button>
+        `;
+
+        facultyMessagePopup.style.display = "flex";
+    });
+}
+
+
+// Submit permanent block.
+function submitPermanentBlock() {
+
+    if (!blockForm || !restrictionType) {
+        return;
+    }
+
+    restrictionType.value = "Permanent";
+
+    startDate.removeAttribute("required");
+    endDate.removeAttribute("required");
+
+    startDate.value = "";
+    endDate.value = "";
+
+    closeFacultyMessage();
+
+    blockForm.querySelector("form").submit();
+}
+
+
+// Unblock confirmation.
+function showUnblockConfirmation() {
+
+    facultyMessageTitle.textContent = "Unblock Student?";
+
+    facultyMessageText.textContent =
+        "The student will be allowed to apply for placement opportunities again.";
+
+    facultyMessageIcon.className =
+        "faculty-message-icon success";
+
+    facultyMessageIcon.innerHTML =
+        '<i class="fa-solid fa-unlock"></i>';
+
+    facultyMessageActions.innerHTML = `
+        <button
+            type="button"
+            class="faculty-message-cancel"
+            onclick="closeFacultyMessage()"
+        >
+            Cancel
+        </button>
+
+        <form
+            method="POST"
+            action="{{ url_for('unblock_student', student_id=student['id']) }}"
+        >
+            <button
+                type="submit"
+                class="faculty-message-confirm"
+            >
+                <i class="fa-solid fa-unlock"></i>
+                Yes, Unblock
+            </button>
+        </form>
+    `;
+
+    facultyMessagePopup.style.display = "flex";
+}
+
+
+// Close popup when clicking outside it.
+facultyMessagePopup.addEventListener("click", event => {
+    if (event.target === facultyMessagePopup) {
+        closeFacultyMessage();
+    }
+});
+
+
+// Close popup using Escape key.
+document.addEventListener("keydown", event => {
+    if (
+        event.key === "Escape" &&
+        facultyMessagePopup.style.display === "flex"
+    ) {
+        closeFacultyMessage();
+    }
+});
+</script>
+
+<script
+    src="{{ url_for('static', filename='js/sidebar.js') }}"
+    defer
+></script>
+
+</body>
+</html>

@@ -1,0 +1,244 @@
+
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Smart Campus Placement Portal
+{% endblock %}
+
+{% block body_class %}home-page{% endblock %}
+
+{% block content %}
+
+<style>
+    /* Management menu beside About */
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .management-menu {
+        position: relative;
+    }
+
+    .management-menu-button {
+        width: 38px;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255,255,255,.18);
+        border-radius: 10px;
+        background: rgba(255,255,255,.07);
+        color: inherit;
+        font-size: 23px;
+        cursor: pointer;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .management-menu-button:hover {
+        background: rgba(255,255,255,.15);
+        transform: translateY(-1px);
+    }
+
+    .management-dropdown {
+        position: absolute;
+        top: calc(100% + 12px);
+        right: 0;
+        width: 220px;
+        padding: 8px;
+        border: 1px solid rgba(255,255,255,.14);
+        border-radius: 13px;
+        background: #171c25;
+        box-shadow: 0 12px 35px rgba(0,0,0,.3);
+        z-index: 1000;
+    }
+
+    .management-dropdown[hidden] {
+        display: none;
+    }
+
+    .management-dropdown a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 9px;
+        color: #f2f5fa;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background .2s ease;
+    }
+
+    .management-dropdown a:hover {
+        background: rgba(255,255,255,.10);
+    }
+
+    .management-dropdown a i {
+        width: 18px;
+        color: #a9bdd2;
+    }
+</style>
+
+<!-- ================= NAVBAR ================= -->
+
+<nav class="navbar">
+
+    <div class="nav-logo">
+        <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Vel Tech Logo"
+        >
+    </div>
+
+    <div class="nav-actions">
+
+        <a href="{{ url_for('about') }}" class="nav-about-link">
+            About
+        </a>
+
+        <!-- Management Login Menu -->
+        <div class="management-menu">
+
+            <button
+                type="button"
+                class="management-menu-button"
+                id="managementMenuButton"
+                aria-label="Open management login options"
+                aria-expanded="false"
+                aria-controls="managementDropdown"
+            >
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+            </button>
+
+            <div
+                class="management-dropdown"
+                id="managementDropdown"
+                hidden
+            >
+
+                <a href="/admin/login?role=ADMIN">
+                    <i class="fa-solid fa-user-gear"></i>
+                    Admin Login
+                </a>
+
+                <a href="/admin/login?role=SUPER_ADMIN">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Super Admin Login
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</nav>
+
+<!-- ================= HERO SECTION ================= -->
+
+<section class="hero">
+
+    <div class="hero-content">
+
+        <div class="hero-left">
+
+            <h1 class="hero-title">
+                <span class="smart-text">Smart Campus</span><br>
+                <span class="placement-text">Placement Portal</span>
+            </h1>
+
+            <p>
+                Empowering Careers Through Smart Recruitment
+            </p>
+
+            <div class="portal-cards">
+
+                <div class="portal-card">
+
+                    <i class="fa-solid fa-user-graduate"></i>
+
+                    <h3>Student Portal</h3>
+
+                    <p>
+                        Login to apply for placement drives, upload your resume,
+                        track interview rounds and manage your profile.
+                    </p>
+
+                    <a
+                        href="{{ url_for('student_login') }}"
+                        class="portal-login-btn"
+                    >
+                        Student Login
+                    </a>
+
+                </div>
+
+                <div class="portal-card">
+
+                    <i class="fa-solid fa-user-tie"></i>
+
+                    <h3>Faculty Portal</h3>
+
+                    <p>
+                        Manage students, companies, placement drives,
+                        applications and recruitment activities.
+                    </p>
+
+                    <a
+                        href="{{ url_for('faculty_login') }}"
+                        class="portal-login-btn"
+                    >
+                        Faculty Login
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const button = document.getElementById("managementMenuButton");
+        const dropdown = document.getElementById("managementDropdown");
+
+        if (!button || !dropdown) return;
+
+        function closeMenu() {
+            dropdown.hidden = true;
+            button.setAttribute("aria-expanded", "false");
+        }
+
+        button.addEventListener("click", function (event) {
+            event.stopPropagation();
+
+            const isOpening = dropdown.hidden;
+
+            dropdown.hidden = !isOpening;
+            button.setAttribute("aria-expanded", String(isOpening));
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!event.target.closest(".management-menu")) {
+                closeMenu();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeMenu();
+                button.focus();
+            }
+        });
+
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,533 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Applications</title>
+
+    <link rel="icon" type="image/png"
+          href="/static/favicon.png?v=3">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/sidebar-enhancements.css') }}">
+
+    <style>
+        .tracking-step.failed .tracking-point {
+            background: #fee2e2;
+            color: #b91c1c;
+            border-color: #ef4444;
+        }
+        .tracking-step.current .tracking-point {
+            border: 2px solid #2563eb;
+        }
+        .tracking-step span small {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.72rem;
+            line-height: 1.2;
+            opacity: 0.8;
+        }
+        .tracking-step.failed span small {
+            color: #b91c1c;
+        }
+        .tracking-step.current span small {
+            color: #2563eb;
+        }
+
+        .feedback-panel {
+            margin-top: 22px;
+            padding: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.20);
+            border-radius: 14px;
+            background: linear-gradient(
+                145deg,
+                rgba(28, 30, 36, 0.82),
+                rgba(17, 20, 26, 0.76)
+            );
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.045),
+                        0 12px 28px rgba(0,0,0,0.16);
+            color: #e8edf5;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+        .feedback-panel h3 {
+            margin: 0 0 8px;
+        }
+        .feedback-summary {
+            margin: 0 0 14px;
+            color: #b5c1d0;
+            line-height: 1.5;
+        }
+        .feedback-counts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-bottom: 16px;
+        }
+        .feedback-counts span {
+            padding: 7px 11px;
+            border-radius: 20px;
+            background: rgba(148, 163, 184, 0.13);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            color: #e5edf7;
+            font-size: 0.84rem;
+            font-weight: 600;
+        }
+        .feedback-columns {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .feedback-block {
+            padding: 13px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.055);
+            border: 1px solid rgba(148, 163, 184, 0.13);
+        }
+        .feedback-block h4 {
+            margin: 0 0 8px;
+        }
+        .feedback-block ul {
+            margin: 0;
+            padding-left: 19px;
+        }
+        .feedback-block li {
+            margin: 0 0 7px;
+            line-height: 1.45;
+        }
+        .feedback-disclaimer {
+            margin: 13px 0 0;
+            font-size: 0.78rem;
+            color: #9eacbd;
+        }
+        .sidebar-unread-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 19px;
+            height: 19px;
+            padding: 0 5px;
+            border-radius: 999px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1;
+            margin-left: auto;
+            box-shadow: 0 0 0 2px rgba(25, 20, 25, .85);
+        }
+        .student-sidebar-nav li { position: relative; }
+        .student-sidebar-nav li a { position: relative; }
+  .student-sidebar-nav .sidebar-unread-badge { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); }
+        .student-sidebar.is-collapsed .sidebar-unread-badge,
+        .student-sidebar.collapsed .sidebar-unread-badge {
+            position: absolute;
+            top: 3px;
+            right: 5px;
+            margin: 0;
+            transform: none;
+        }
+        @media (max-width: 700px) {
+            .feedback-columns {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+    </style>
+
+</head>
+
+<body class="student-dashboard-body">
+
+<aside class="student-sidebar">
+
+    <button class="student-sidebar-collapse-btn"
+            type="button"
+            data-sidebar-toggle="student"
+            aria-label="Collapse sidebar"
+            aria-expanded="true"
+            title="Collapse sidebar">
+        <i class="fa-solid fa-angles-left"></i>
+    </button>
+
+    <div class="sidebar-logo">
+        <img src="{{ url_for('static', filename='images/logo.png') }}"
+             alt="Smart Placement Portal">
+    </div>
+
+    <ul class="student-sidebar-nav">
+
+        <li class="{% if request.endpoint == 'student_dashboard' %}active{% endif %}">
+            <a href="{{ url_for('student_dashboard') }}">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li class="{% if request.endpoint == 'student_profile' %}active{% endif %}">
+            <a href="{{ url_for('student_profile') }}">
+                <i class="fa-solid fa-user"></i>
+                <span>My Profile</span>
+            </a>
+        </li>
+
+        <li class="{% if request.endpoint in ['job_opportunities', 'company_details'] %}active{% endif %}">
+            <a href="{{ url_for('job_opportunities') }}">
+                <i class="fa-solid fa-briefcase"></i>
+                <span>Job Opportunities</span>
+            </a>
+        </li>
+
+        <li class="{% if request.endpoint == 'student_applications' %}active{% endif %}">
+            <a href="{{ url_for('student_applications') }}">
+                <i class="fa-solid fa-file-lines"></i>
+                <span>My Applications</span>
+            </a>
+        </li>
+
+        <li class="{% if request.endpoint == 'student_resume' %}active{% endif %}">
+            <a href="{{ url_for('student_resume') }}">
+                <i class="fa-solid fa-file-arrow-up"></i>
+                <span>Resume</span>
+            </a>
+        </li>
+
+        <li class="{% if request.endpoint == 'student_notifications' %}active{% endif %}">
+            <a href="{{ url_for('student_notifications') }}">
+                <i class="fa-solid fa-bell"></i>
+                <span>Notifications</span>
+                {% if student_unread_notifications %}
+                    <span class="sidebar-unread-badge"
+                          aria-label="{{ student_unread_notifications }} unread notifications">
+                        {{ student_unread_notifications if student_unread_notifications < 100 else '99+' }}
+                    </span>
+                {% endif %}
+            </a>
+        </li>
+
+        <li class="student-sidebar-logout">
+            <a href="{{ url_for('logout') }}">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </li>
+
+    </ul>
+</aside>
+
+<div class="student-main">
+
+    <main class="applications-page">
+
+        <!-- PAGE HEADER -->
+
+        <div class="applications-header">
+
+            <a href="{{ url_for('student_dashboard') }}"
+               class="back-dashboard-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Dashboard
+            </a>
+
+            <div class="applications-title">
+
+                <p class="page-label">PLACEMENT PORTAL</p>
+
+                <h1>My Applications</h1>
+
+                <p class="page-subtitle">
+                    Track the progress of your placement applications
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- APPLICATIONS LIST -->
+
+        {% if applications %}
+
+            <div class="applications-list">
+
+                {% for application in applications %}
+
+                    {% set status = application['status'] or 'Applied' %}
+                    {% set rounds = application['rounds'] or [] %}
+                    {% set progress = namespace(stage=application['completed_rounds'] or 0) %}
+
+                    <section class="application-card">
+
+                        <!-- COMPANY HEADER -->
+
+                        <div class="application-top">
+
+                            <div>
+
+                                <h2>
+                                    {{ application['company_name'] }}
+                                </h2>
+
+                                <p class="application-role">
+                                    {{ application['job_role'] }}
+                                </p>
+
+                            </div>
+
+                            <span class="application-status">
+                                {{ status }}
+                            </span>
+
+                        </div>
+
+                        <!-- JOB DETAILS -->
+
+                        <div class="application-details">
+
+                            <div>
+                                <span>Package</span>
+                                <strong>
+                                    {{ application['package'] }} LPA
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Location</span>
+                                <strong>
+                                    {{ application['location'] }}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Applied On</span>
+                                <strong>
+                                    {{ application['applied_date'] }}
+                                </strong>
+                            </div>
+
+                        </div>
+
+                        <!-- DYNAMIC APPLICATION TRACKING -->
+
+                        <div class="tracking-section">
+
+                            <h3>Application Progress</h3>
+
+                            {% set total_rounds = rounds|length %}
+                            {% set progress_percent = ((progress.stage * 100 / total_rounds)|int) if total_rounds > 0 else 0 %}
+
+                            {% if status|lower == 'rejected' %}
+                                <p class="tracking-empty">
+                                    Your application has been rejected.
+                                </p>
+                            {% endif %}
+
+                            {% if rounds %}
+
+                                <div class="tracking">
+
+                                    <div class="tracking-line">
+                                        <div class="tracking-line-fill"
+                                             data-progress="{{ progress_percent }}">
+                                        </div>
+                                    </div>
+
+                                    {% for round_item in rounds %}
+                                        {% set round_status = round_item['status'] %}
+                                        {% set is_current = (
+                                            round_status == 'Pending'
+                                            and status|lower in ['shortlisted', 'interview in progress']
+                                            and progress.stage == loop.index0
+                                        ) %}
+
+                                        <div class="tracking-step
+                                            {% if round_status == 'Passed' %}active
+                                            {% elif round_status == 'Failed' %}failed
+                                            {% elif is_current %}current
+                                            {% endif %}">
+
+                                            <div class="tracking-point">
+                                                {% if round_status == 'Passed' %}
+                                                    ✓
+                                                {% elif round_status == 'Failed' %}
+                                                    ×
+                                                {% else %}
+                                                    {{ loop.index }}
+                                                {% endif %}
+                                            </div>
+
+                                            <span>
+                                                {{ round_item['round_name'] }}
+                                                <small>{{ round_status }}</small>
+                                            </span>
+
+                                        </div>
+                                    {% endfor %}
+
+                                </div>
+
+                            {% else %}
+
+                                <p class="tracking-empty">
+                                    Interview rounds have not been configured
+                                    for this company yet.
+                                </p>
+
+                            {% endif %}
+
+                        <!-- RESUME MATCH SCORE -->
+
+                        {% if application['resume_score'] is not none %}
+
+                            <div class="resume-score-preview">
+
+                                <div>
+
+                                    <span>Resume Match Score</span>
+
+                                    <strong>
+                                        {{ application['resume_score'] }}%
+                                    </strong>
+
+                                </div>
+
+                                <p>
+                                    Based on your resume and this job
+                                    opportunity.
+                                </p>
+
+                            </div>
+
+                        {% else %}
+
+                            <div class="resume-score-pending">
+
+                                <span>Resume Match Score</span>
+
+                                <p>
+                                    Your resume score will appear after
+                                    resume analysis.
+                                </p>
+
+                            </div>
+
+                        {% endif %}
+
+                        <!-- AUTOMATED PLACEMENT PERFORMANCE FEEDBACK -->
+                        {% if application.get('feedback') %}
+                            {% set feedback = application['feedback'] %}
+                            <section class="feedback-panel">
+                                <h3><i class="fa-solid fa-lightbulb"></i> Placement Performance Feedback</h3>
+                                <p class="feedback-summary">{{ feedback['summary'] }}</p>
+
+                                <div class="feedback-counts">
+                                    <span>Passed: {{ feedback['passed_count'] }}</span>
+                                    <span>Failed: {{ feedback['failed_count'] }}</span>
+                                    <span>Pending: {{ feedback['pending_count'] }}</span>
+                                </div>
+
+                                <div class="feedback-columns">
+                                    <div class="feedback-block">
+                                        <h4>Strengths</h4>
+                                        <ul>
+                                            {% for item in feedback['strengths'] %}
+                                                <li>{{ item }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+
+                                    <div class="feedback-block">
+                                        <h4>Areas to Review</h4>
+                                        {% if feedback['improvement_areas'] %}
+                                            <ul>
+                                                {% for item in feedback['improvement_areas'] %}
+                                                    <li>
+                                                        <strong>{{ item['round_name'] }}</strong>
+                                                        {% if item['remarks'] %}
+                                                            — {{ item['remarks'] }}
+                                                        {% else %}
+                                                            — No specific faculty remarks were recorded.
+                                                        {% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p>No failed interview rounds have been recorded.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="feedback-block" style="margin-top: 14px;">
+                                    <h4>Recommendations</h4>
+                                    <ul>
+                                        {% for item in feedback['recommendations'] %}
+                                            <li>{{ item }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+
+                                <p class="feedback-disclaimer">
+                                    This feedback is generated from recorded interview results and faculty remarks.
+                                    It does not represent a measured skill score or an assessment of unrecorded abilities.
+                                </p>
+                            </section>
+                        {% endif %}
+
+                    </section>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <!-- NO APPLICATIONS -->
+
+            <div class="no-applications">
+
+                <div class="empty-icon">◫</div>
+
+                <h2>No Applications Yet</h2>
+
+                <p>
+                    You haven't applied for any placement opportunities yet.
+                </p>
+
+                <a href="{{ url_for('student_dashboard') }}"
+                   class="browse-jobs-btn">
+                    Browse Placement Drives
+                </a>
+
+            </div>
+
+        {% endif %}
+{% include "components/site_footer.html" %}
+    </main>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".tracking-line-fill").forEach(function (bar) {
+        const progress = Number.parseFloat(bar.dataset.progress);
+        const safeProgress = Number.isFinite(progress)
+            ? Math.min(100, Math.max(0, progress))
+            : 0;
+
+        bar.style.width = safeProgress + "%";
+    });
+});
+</script>
+
+<script src="{{ url_for('static', filename='js/sidebar.js') }}"
+        defer></script>
+
+</body>
+</html>

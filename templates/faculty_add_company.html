@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="/static/favicon.png?v=3">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Company | Smart Placement Portal</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        /* ==========================================
+           ADD COMPANY PAGE
+           ========================================== */
+        .add-company-page {
+            min-height: 100vh;
+            padding: 35px 45px 60px;
+        }
+
+        .add-company-header {
+            margin-bottom: 30px;
+        }
+
+        .add-company-header h1 {
+            margin: 0;
+            font-size: 42px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .add-company-header p {
+            margin-top: 8px;
+            color: #b8bdc7;
+            font-size: 16px;
+        }
+
+        .add-company-card {
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(18, 18, 18, 0.82);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 20px;
+            padding: 30px;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
+        .company-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.07);
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #999fa8;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #aec3d9;
+        }
+
+        .form-group textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .interview-rounds-group textarea {
+            min-height: 150px;
+            line-height: 1.6;
+        }
+
+        .rounds-help {
+            margin-top: 8px;
+            color: #b8bdc7;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .form-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .add-company-submit,
+        .cancel-company-btn {
+            padding: 13px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+        }
+
+        .add-company-submit {
+            background: #aec3d9;
+            color: #111820;
+        }
+
+        .add-company-submit:hover {
+            background: #c0d2e4;
+        }
+
+        .cancel-company-btn {
+            background: rgba(255,255,255,0.08);
+            color: #ffffff;
+            border: 1px solid rgba(255,255,255,0.14);
+        }
+
+        .cancel-company-btn:hover {
+            background: rgba(255,255,255,0.14);
+        }
+
+        @media (max-width: 900px) {
+            .add-company-page {
+                padding: 25px 20px 50px;
+            }
+
+            .company-form {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full-width {
+                grid-column: auto;
+            }
+
+            .form-actions {
+                grid-column: auto;
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar-enhancements.css') }}">
+
+    <style>
+        /* Keep Add Company aligned with the shared faculty layout and responsive sidebar. */
+        .add-company-page {
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 35px clamp(18px, 3vw, 45px) 60px;
+            box-sizing: border-box;
+        }
+
+        .add-company-header {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .add-company-card {
+            width: 100%;
+            max-width: none;
+            box-sizing: border-box;
+        }
+
+        .company-form {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .company-form .form-group {
+            min-width: 0;
+        }
+
+        .company-form input,
+        .company-form textarea {
+            max-width: 100%;
+        }
+
+        @media (max-width: 760px) {
+            .add-company-page {
+                padding: 24px 16px 40px;
+            }
+
+            .company-form {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .company-form .form-group.full-width,
+            .company-form .form-actions {
+                grid-column: 1;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body class="faculty-dashboard-body">
+
+    <!-- ================= FACULTY SIDEBAR ================= -->
+    <aside class="faculty-sidebar" id="facultySidebar">
+
+        <!-- Logo and Collapse Button -->
+        <div class="faculty-sidebar-brand">
+            <img
+                src="{{ url_for('static', filename='images/logo.png') }}"
+                alt="Vel Tech Smart Placement Portal"
+            >
+
+            <button
+                class="sidebar-collapse-btn"
+                type="button"
+                data-sidebar-toggle="faculty"
+                aria-label="Collapse sidebar"
+                aria-expanded="true"
+                title="Collapse sidebar"
+            >
+                <i class="fa-solid fa-angles-left"></i>
+            </button>
+        </div>
+
+        <!-- Faculty Identity -->
+        <div class="faculty-identity">
+            <div class="faculty-avatar">
+                <i class="fa-solid fa-user-tie"></i>
+            </div>
+
+            <div class="faculty-identity-text">
+                <strong>{{ session.get('faculty_name', 'Faculty') }}</strong>
+                <span>
+                    {{ session.get(
+                        'faculty_role',
+                        faculty_role if faculty_role is defined else 'Faculty'
+                    ) }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="faculty-nav" aria-label="Faculty navigation">
+
+            <!-- Dashboard -->
+            <a
+                href="{{ url_for('faculty_dashboard') }}"
+                class="faculty-nav-link {% if request.endpoint == 'faculty_dashboard' %}active{% endif %}"
+                title="Dashboard"
+            >
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <!-- Manage Group -->
+            <section class="sidebar-group {% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students', 'faculty_management'] %}is-open{% endif %}">
+
+                <button
+                    type="button"
+                    class="faculty-nav-link sidebar-group-toggle"
+                    aria-expanded="{% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students', 'faculty_management'] %}true{% else %}false{% endif %}"
+                    title="Manage"
+                >
+                    <i class="fa-solid fa-users-gear"></i>
+                    <span>Manage</span>
+                    <i class="fa-solid fa-chevron-down group-chevron"></i>
+                </button>
+
+                <div class="sidebar-submenu">
+                    <a
+                        href="{{ url_for('faculty_students') }}"
+                        class="faculty-nav-link {% if request.endpoint in ['faculty_students', 'faculty_student_details', 'edit_student', 'add_student', 'bulk_upload_students'] %}active{% endif %}"
+                        title="Students"
+                    >
+                        <i class="fa-solid fa-users"></i>
+                        <span>Students</span>
+                    </a>
+
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a
+                        href="{{ url_for('faculty_management') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_management' %}active{% endif %}"
+                        title="Faculty Management"
+                    >
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Faculty Management</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Placement Group -->
+            <section class="sidebar-group {% if request.endpoint in ['faculty_companies', 'faculty_applications', 'faculty_selection', 'faculty_add_company', 'edit_company'] %}is-open{% endif %}">
+
+                <button
+                    type="button"
+                    class="faculty-nav-link sidebar-group-toggle"
+                    aria-expanded="{% if request.endpoint in ['faculty_companies', 'faculty_applications', 'faculty_selection', 'faculty_add_company', 'edit_company'] %}true{% else %}false{% endif %}"
+                    title="Placement"
+                >
+                    <i class="fa-solid fa-building"></i>
+                    <span>Placement</span>
+                    <i class="fa-solid fa-chevron-down group-chevron"></i>
+                </button>
+
+                <div class="sidebar-submenu">
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a
+                        href="{{ url_for('faculty_companies') }}"
+                        class="faculty-nav-link {% if request.endpoint in ['faculty_companies', 'faculty_add_company', 'edit_company'] %}active{% endif %}"
+                        title="Companies"
+                    >
+                        <i class="fa-solid fa-building"></i>
+                        <span>Companies</span>
+                    </a>
+                    {% endif %}
+
+                    <a
+                        href="{{ url_for('faculty_applications') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_applications' %}active{% endif %}"
+                        title="Applications"
+                    >
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span>Applications</span>
+                    </a>
+
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a
+                        href="{{ url_for('faculty_selection') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_selection' %}active{% endif %}"
+                        title="Selection"
+                    >
+                        <i class="fa-solid fa-user-check"></i>
+                        <span>Selection</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Notifications and Reports Group -->
+            <section class="sidebar-group {% if request.endpoint in ['faculty_notifications', 'faculty_send_announcement', 'faculty_reports'] %}is-open{% endif %}">
+
+                <button
+                    type="button"
+                    class="faculty-nav-link sidebar-group-toggle"
+                    aria-expanded="{% if request.endpoint in ['faculty_notifications', 'faculty_send_announcement', 'faculty_reports'] %}true{% else %}false{% endif %}"
+                    title="Notifications and Reports"
+                >
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Notifications</span>
+                    <i class="fa-solid fa-chevron-down group-chevron"></i>
+                </button>
+
+                <div class="sidebar-submenu">
+                    <!-- Received Messages -->
+                    <a
+                        href="{{ url_for('faculty_notifications') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_notifications' %}active{% endif %}"
+                        title="Received Messages"
+                    >
+                        <i class="fa-solid fa-inbox"></i>
+                        <span>Received Messages</span>
+
+                        {% if unread_notification_count > 0 %}
+                        <span class="notification-badge">
+                            {{ unread_notification_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    <!-- Send Announcements -->
+                    {% if session.get('faculty_role', faculty_role if faculty_role is defined else '') in ['Dean', 'HOD'] %}
+                    <a
+                        href="{{ url_for('faculty_send_announcement') }}"
+                        class="faculty-nav-link {% if request.endpoint == 'faculty_send_announcement' %}active{% endif %}"
+                        title="Send Announcements"
+                    >
+                        <i class="fa-solid fa-bullhorn"></i>
+                        <span>Send Announcements</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Reports -->
+            <a
+                href="{{ url_for('faculty_reports') }}"
+                class="faculty-nav-link {% if request.endpoint == 'faculty_reports' %}active{% endif %}"
+                title="Placement Reports"
+            >
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Reports</span>
+            </a>
+        </nav>
+
+        <!-- Bottom Navigation -->
+        <div class="faculty-sidebar-bottom">
+            <a
+                href="{{ url_for('faculty_my_profile') }}"
+                class="faculty-nav-link {% if request.endpoint == 'faculty_my_profile' %}active{% endif %}"
+                title="My Profile"
+            >
+                <i class="fa-solid fa-user"></i>
+                <span>My Profile</span>
+            </a>
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="faculty-nav-link faculty-logout"
+                title="Logout"
+            >
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="faculty-main">
+        <section class="add-company-page">
+
+            <div class="add-company-header">
+                <h1>Add Company</h1>
+                <p>Add a new company and placement opportunity.</p>
+            </div>
+
+            <div class="add-company-card">
+                <form
+                    method="POST"
+                    action="{{ url_for('faculty_add_company') }}"
+                    class="company-form"
+                >
+                    <div class="form-group">
+                        <label for="company_name">Company Name</label>
+                        <input
+                            type="text"
+                            id="company_name"
+                            name="company_name"
+                            placeholder="Enter company name"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="job_role">Job Role</label>
+                        <input
+                            type="text"
+                            id="job_role"
+                            name="job_role"
+                            placeholder="Example: Software Developer"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="package">Package (LPA)</label>
+                        <input
+                            type="text"
+                            id="package"
+                            name="package"
+                            placeholder="Example: 8"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input
+                            type="text"
+                            id="location"
+                            name="location"
+                            placeholder="Example: Chennai"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cgpa_required">Minimum CGPA</label>
+                        <input
+                            type="number"
+                            id="cgpa_required"
+                            name="cgpa_required"
+                            placeholder="Example: 7.5"
+                            step="0.01"
+                            min="0"
+                            max="10"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills_required">Required Skills</label>
+                        <input
+                            type="text"
+                            id="skills_required"
+                            name="skills_required"
+                            placeholder="Example: Java, Python, SQL"
+                        >
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="eligible_departments">Eligible Departments</label>
+                        <input
+                            type="text"
+                            id="eligible_departments"
+                            name="eligible_departments"
+                            placeholder="Example: CSE, AI&DS, ECE"
+                        >
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="eligible_batches">Eligible Passing-out Batches</label>
+                        <input
+                            type="text"
+                            id="eligible_batches"
+                            name="eligible_batches"
+                            placeholder="Example: 2027, 2028"
+                            pattern="20[0-9]{2}([,; ]+20[0-9]{2})*"
+                            title="Enter comma-separated passing-out years, for example 2027, 2028."
+                            required
+                        >
+                        <small class="rounds-help">
+                            Enter the graduation years eligible for this drive, separated by commas.
+                            Example: 2027, 2028. Students from other batches cannot apply.
+                        </small>
+                    </div>
+
+                    <div class="form-group full-width interview-rounds-group">
+                        <label for="interview_rounds">Interview Process / Rounds</label>
+                        <textarea
+                            id="interview_rounds"
+                            name="interview_rounds"
+                            placeholder="Enter one round per line, in order:
+Online Assessment
+Technical Interview
+Managerial Interview
+HR Interview"
+                            required
+                        ></textarea>
+                        <small class="rounds-help">
+                            Enter each round on a separate line. Add 2, 4, 6, or any number of rounds for this company.
+                            Students can view this process, and faculty can record results round by round in Selection.
+                        </small>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="description">Job Description</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            placeholder="Enter job description and other details..."
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="application_deadline">Application Deadline</label>
+                        <input
+                            type="date"
+                            id="application_deadline"
+                            name="application_deadline"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="add-company-submit">
+                            <i class="fa-solid fa-plus"></i>
+                            Add Company
+                        </button>
+
+                        <a
+                            href="{{ url_for('faculty_companies') }}"
+                            class="cancel-company-btn"
+                        >
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        {% include "components/site_footer.html" %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}" defer></script>
+</body>
+</html>

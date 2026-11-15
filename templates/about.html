@@ -1,0 +1,780 @@
+
+{% extends "layouts/base.html" %}
+
+{% block title %}About PLACEHUB | Smart Campus Placement Portal{% endblock %}
+
+{% block body_class %}about-page-body{% endblock %}ww
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Source+Sans+3:wght@400;500;600;700;800&display=swap');
+
+    /* ==========================================
+       PLACEHUB - ABOUT PAGE
+       ========================================== */
+
+    body.about-page-body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+
+        font-family: 'Source Sans 3', Arial, sans-serif;
+        color: #f5f7fa;
+
+        background:
+            linear-gradient(
+                115deg,
+                rgba(10, 12, 16, .91),
+                rgba(10, 12, 16, .79) 52%,
+                rgba(10, 12, 16, .72)
+            ),
+            url("{{ url_for('static', filename='images/campus.jpg') }}")
+            center center / cover fixed no-repeat;
+    }
+
+    body.about-page-body *,
+    body.about-page-body *::before,
+    body.about-page-body *::after {
+        box-sizing: border-box;
+    }
+
+    body.about-page-body .about-page {
+        flex: 1 0 auto;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        padding: 0 24px 65px;
+        background: transparent;
+    }
+
+    .about-container {
+        width: 100%;
+        max-width: 1140px;
+        margin: 0 auto;
+    }
+
+    /* Navigation */
+
+    .about-page-body .about-topbar {
+        max-width: 1140px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 24px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    .about-page-body .about-brand {
+        display: inline-flex;
+        align-items: center;
+        color: #f5f7fa;
+        text-decoration: none;
+    }
+
+    .about-page-body .about-brand img {
+        width: 140px;
+        max-width: 100%;
+        height: 45px;
+        object-fit: contain;
+        object-position: left center;
+    }
+
+    .about-page-body .about-home-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 17px;
+        border: 1px solid rgba(255,255,255,.17);
+        border-radius: 8px;
+        background: rgba(20,23,29,.58);
+        color: #dce6ef;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .about-page-body .about-home-link:hover {
+        background: rgba(169,189,210,.17);
+        transform: translateY(-2px);
+    }
+
+    /* Hero */
+
+    .about-page-body .about-hero {
+        padding: 88px 16px 100px;
+        max-width: 940px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .about-page-body .about-eyebrow,
+    .about-page-body .about-section-eyebrow {
+        display: inline-block;
+        margin-bottom: 19px;
+        color: #b7cce1;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+    }
+
+    .about-page-body .about-hero h1 {
+        margin: 0 0 25px;
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: clamp(46px, 6.5vw, 76px);
+        font-weight: 400;
+        line-height: 1.08;
+        letter-spacing: -.8px;
+        color: #fff;
+    }
+
+    .about-page-body .about-hero h1 span {
+        color: #b5c9e4;
+        background: linear-gradient(100deg, #c0d3e9, #a998ed, #d9a0c8);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .about-page-body .about-hero p {
+        max-width: 730px;
+        margin: 0 auto;
+        color: #d1d8e1;
+        font-size: clamp(17px, 1.7vw, 20px);
+        line-height: 1.85;
+        font-weight: 400;
+    }
+
+    /* General sections */
+
+    .about-page-body .about-section {
+        margin-bottom: 78px;
+    }
+
+    .about-page-body .about-section-heading {
+        max-width: 780px;
+        margin: 0 auto 38px;
+        text-align: center;
+    }
+
+    .about-page-body .about-section-heading h2 {
+        margin: 0 0 15px;
+        color: #fff;
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: clamp(31px, 4vw, 43px);
+        font-weight: 400;
+        line-height: 1.2;
+    }
+
+    .about-page-body .about-section-heading p {
+        margin: 0;
+        color: #cbd3dd;
+        font-size: 17px;
+        line-height: 1.8;
+    }
+
+    /* Benefit cards */
+
+    .about-page-body .about-benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .about-page-body .about-benefit-card {
+        min-width: 0;
+        padding: 30px;
+        background: rgba(23,27,33,.78);
+        border: 1px solid rgba(255,255,255,.14);
+        border-radius: 12px;
+        box-shadow: 0 12px 35px rgba(0,0,0,.18);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: border-color .2s ease, transform .2s ease;
+    }
+
+    .about-page-body .about-benefit-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(169,189,210,.42);
+    }
+
+    .about-page-body .about-card-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 22px;
+        border-radius: 10px;
+        background: rgba(169,189,210,.15);
+        color: #c1d6ec;
+        font-size: 21px;
+    }
+
+    .about-page-body .about-benefit-card h3 {
+        margin: 0 0 12px;
+        color: #f6f8fb;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+    .about-page-body .about-benefit-card p {
+        margin: 0;
+        color: #c5ced8;
+        font-size: 15px;
+        line-height: 1.8;
+    }
+
+    /* Portal panels */
+
+    .about-page-body .about-portal-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+    }
+
+    .about-page-body .about-portal-panel {
+        min-width: 0;
+        padding: 36px;
+        background: rgba(23,27,33,.83);
+        border: 1px solid rgba(255,255,255,.15);
+        border-radius: 14px;
+        box-shadow: 0 12px 35px rgba(0,0,0,.18);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    .about-page-body .about-portal-panel .about-card-icon {
+        margin-bottom: 18px;
+    }
+
+    .about-page-body .about-portal-panel h3 {
+        margin: 0 0 12px;
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: 29px;
+        font-weight: 400;
+        color: #fff;
+    }
+
+    .about-page-body .about-portal-intro {
+        margin: 0 0 25px;
+        color: #cbd3dd;
+        font-size: 16px;
+        line-height: 1.8;
+    }
+
+    .about-page-body .about-feature-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 17px;
+    }
+
+    .about-page-body .about-feature-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 13px;
+        color: #d9e0e8;
+        font-size: 15px;
+        line-height: 1.7;
+    }
+
+    .about-page-body .about-feature-list li i {
+        margin-top: 5px;
+        color: #b5cce3;
+        flex-shrink: 0;
+    }
+
+    /* Process */
+
+    .about-page-body .about-steps {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .about-page-body .about-step {
+        padding: 28px;
+        border-radius: 12px;
+        background: rgba(23,27,33,.78);
+        border: 1px solid rgba(255,255,255,.13);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    .about-page-body .about-step-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        margin-bottom: 18px;
+        border-radius: 8px;
+        background: #b5c9df;
+        color: #17202a;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .about-page-body .about-step h3 {
+        margin: 0 0 10px;
+        color: #fff;
+        font-size: 19px;
+        font-weight: 700;
+    }
+
+    .about-page-body .about-step p {
+        margin: 0;
+        color: #c5ced8;
+        font-size: 15px;
+        line-height: 1.8;
+    }
+
+    /* Call to action */
+
+    .about-page-body .about-cta {
+        max-width: 1140px;
+        margin: 25px auto 0;
+        padding: 55px 30px;
+        text-align: center;
+        border-radius: 14px;
+        border: 1px solid rgba(169,189,210,.24);
+        background: rgba(19,24,32,.88);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
+
+    .about-page-body .about-cta h2 {
+        margin: 0 0 14px;
+        color: #fff;
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: clamp(30px, 3vw, 40px);
+        font-weight: 400;
+    }
+
+    .about-page-body .about-cta p {
+        margin: 0 0 27px;
+        color: #cbd3dd;
+        font-size: 16px;
+        line-height: 1.7;
+    }
+
+    .about-page-body .about-cta-actions {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    .about-page-body .about-cta-actions a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-width: 175px;
+        padding: 14px 23px;
+        border-radius: 8px;
+        background: #b5c9df;
+        color: #121922;
+        font-size: 15px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: transform .2s ease, background .2s ease;
+    }
+
+    .about-page-body .about-cta-actions a:hover {
+        transform: translateY(-2px);
+        background: #d0dfed;
+    }
+
+    .about-page-body .about-cta-actions a:last-child {
+        background: rgba(255,255,255,.09);
+        border: 1px solid rgba(255,255,255,.2);
+        color: #e9f0f7;
+    }
+
+    .about-page-body .about-cta-actions a:last-child:hover {
+        background: rgba(255,255,255,.16);
+    }
+
+    /* Footer is supplied by layouts/base.html */
+
+    body.about-page-body > .site-footer {
+        flex: 0 0 auto;
+        width: 100%;
+        margin-top: 0;
+    }
+
+    /* Responsive */
+
+    @media (max-width: 900px) {
+        .about-page-body .about-benefits-grid,
+        .about-page-body .about-steps {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .about-page-body .about-portal-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .about-page-body .about-hero {
+            padding: 65px 12px 75px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        body.about-page-body {
+            background-attachment: scroll;
+        }
+
+        body.about-page-body .about-page {
+            padding: 0 16px 35px;
+        }
+
+        .about-page-body .about-topbar {
+            padding: 16px 0;
+        }
+
+        .about-page-body .about-brand img {
+            width: 118px;
+            height: 40px;
+        }
+
+        .about-page-body .about-home-link {
+            padding: 10px 13px;
+            font-size: 13px;
+        }
+
+        .about-page-body .about-hero {
+            padding: 55px 0 65px;
+        }
+
+        .about-page-body .about-hero h1 {
+            font-size: clamp(42px, 12vw, 58px);
+        }
+
+        .about-page-body .about-benefits-grid,
+        .about-page-body .about-steps,
+        .about-page-body .about-portal-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .about-page-body .about-benefit-card,
+        .about-page-body .about-portal-panel {
+            padding: 25px 22px;
+        }
+
+        .about-page-body .about-section {
+            margin-bottom: 52px;
+        }
+
+        .about-page-body .about-cta {
+            padding: 36px 20px;
+        }
+
+        .about-page-body .about-cta-actions {
+            flex-direction: column;
+        }
+
+        .about-page-body .about-cta-actions a {
+            width: 100%;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .about-page-body .about-benefit-card,
+        .about-page-body .about-cta-actions a,
+        .about-page-body .about-home-link {
+            transition: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<main class="about-page">
+
+    <!-- Navigation -->
+    <nav class="about-topbar" aria-label="About page navigation">
+
+        <a href="{{ url_for('home') }}" class="about-brand">
+            <img
+                src="{{ url_for('static', filename='images/logo.png') }}"
+                alt="PLACEHUB Logo"
+            >
+        </a>
+
+       <a
+    href="{{ request.referrer if request.referrer and request.host_url in request.referrer else url_for('home') }}"
+    class="about-home-link"
+>
+    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+    Back
+</a>
+
+    </nav>
+
+    <div class="about-container">
+
+        <!-- Hero -->
+        <header class="about-hero">
+
+            <span class="about-eyebrow">YOUR PLACEMENT JOURNEY, SIMPLIFIED</span>
+
+            <h1>
+                One Platform.<br>
+                <span>Better Placement Experience.</span>
+            </h1>
+
+            <p>
+                PLACEHUB brings students, faculty and campus recruitment
+                activities together, helping everyone stay informed,
+                organized and focused on placement success.
+            </p>
+
+        </header>
+
+        <!-- Why PLACEHUB -->
+        <section class="about-section" aria-labelledby="why-placehub">
+
+            <div class="about-section-heading">
+                <span class="about-section-eyebrow">WHY PLACEHUB?</span>
+                <h2 id="why-placehub">Less Confusion. More Clarity.</h2>
+                <p>
+                    Placement activities involve multiple companies,
+                    applications, deadlines and updates. PLACEHUB makes
+                    this journey easier to manage from one place.
+                </p>
+            </div>
+
+            <div class="about-benefits-grid">
+
+                <article class="about-benefit-card">
+                    <div class="about-card-icon">
+                        <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                    </div>
+                    <h3>Everything in One Place</h3>
+                    <p>
+                        Find placement opportunities, applications,
+                        announcements and important updates without
+                        switching between different sources.
+                    </p>
+                </article>
+
+                <article class="about-benefit-card">
+                    <div class="about-card-icon">
+                        <i class="fa-solid fa-clock" aria-hidden="true"></i>
+                    </div>
+                    <h3>Save Time and Effort</h3>
+                    <p>
+                        Spend less time searching for information and
+                        managing records, and more time preparing for
+                        recruitment opportunities.
+                    </p>
+                </article>
+
+                <article class="about-benefit-card">
+                    <div class="about-card-icon">
+                        <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                    </div>
+                    <h3>Stay Informed</h3>
+                    <p>
+                        Keep track of application progress, recruitment
+                        announcements and important placement activities
+                        through your portal.
+                    </p>
+                </article>
+
+            </div>
+
+        </section>
+
+        <!-- Student and Faculty Portals -->
+        <section class="about-section" aria-labelledby="portal-benefits">
+
+            <div class="about-section-heading">
+                <span class="about-section-eyebrow">BUILT FOR YOUR ROLE</span>
+                <h2 id="portal-benefits">How PLACEHUB Helps You</h2>
+                <p>
+                    A dedicated experience for students preparing for
+                    placements and faculty managing campus recruitment.
+                </p>
+            </div>
+
+            <div class="about-portal-grid">
+
+                <!-- Student -->
+                <article class="about-portal-panel">
+
+                    <div class="about-card-icon">
+                        <i class="fa-solid fa-user-graduate" aria-hidden="true"></i>
+                    </div>
+
+                    <h3>For Students</h3>
+
+                    <p class="about-portal-intro">
+                        Manage your placement journey with a clear view
+                        of opportunities, applications and progress.
+                    </p>
+
+                    <ul class="about-feature-list">
+                        <li>
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>Explore available companies, job roles and placement opportunities.</span>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>View eligibility requirements before applying for a drive.</span>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>Apply for suitable opportunities through your student portal.</span>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>Maintain your profile and upload or update your resume.</span>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>Follow application status and interview progress.</span>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>Receive placement announcements and relevant notifications.</span>
+                        </li>
+                    </ul>
+
+                </article>
+
+                <!-- Faculty -->
+                <article class="about-portal-panel">
+
+                    <div class="about-card-icon">
+                        <i class="fa-solid fa-user-tie" aria-hidden="true"></i>
+                    </div>
+
+                    <h3>For Faculty</h3>
+
+                    <p class="about-portal-intro">
+                        Coordinate placement activities more efficiently
+                        and keep student recruitment information organized.
+                    </p>
+
+                    <ul class="about-feature-list">
+                        <li>
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>Access and manage student placement records according to your role.</span>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>Organize company information and placement opportunities.</span>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>Review student applications and recruitment progress.</span>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>Monitor shortlisting, interviews and selection outcomes.</span>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>Share important announcements with students and faculty.</span>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>View placement reports to understand overall progress.</span>
+                        </li>
+                    </ul>
+
+                </article>
+
+            </div>
+
+        </section>
+
+        <!-- Placement Journey -->
+        <section class="about-section" aria-labelledby="placement-journey">
+
+            <div class="about-section-heading">
+                <span class="about-section-eyebrow">A SIMPLER EXPERIENCE</span>
+                <h2 id="placement-journey">Your Placement Journey in Three Steps</h2>
+                <p>
+                    From discovering a company to following your
+                    application progress, PLACEHUB keeps the process organized.
+                </p>
+            </div>
+
+            <div class="about-steps">
+
+                <article class="about-step">
+                    <span class="about-step-number">01</span>
+                    <h3>Discover Opportunities</h3>
+                    <p>
+                        Browse available placement drives and understand
+                        the roles, requirements and application details.
+                    </p>
+                </article>
+
+                <article class="about-step">
+                    <span class="about-step-number">02</span>
+                    <h3>Apply and Prepare</h3>
+                    <p>
+                        Submit applications for suitable opportunities,
+                        maintain your resume and prepare for upcoming rounds.
+                    </p>
+                </article>
+
+                <article class="about-step">
+                    <span class="about-step-number">03</span>
+                    <h3>Track Your Progress</h3>
+                    <p>
+                        Follow your application status, interview updates
+                        and selection progress from your dashboard.
+                    </p>
+                </article>
+
+            </div>
+
+        </section>
+
+        <!-- Call to action -->
+        <section class="about-cta" aria-labelledby="about-cta-title">
+
+            <h2 id="about-cta-title">Ready to Get Started?</h2>
+
+            <p>
+                Access your dedicated portal and make campus
+                placements easier to manage.
+            </p>
+
+            <div class="about-cta-actions">
+
+                <a href="{{ url_for('student_login') }}">
+                    <i class="fa-solid fa-user-graduate" aria-hidden="true"></i>
+                    Student Login
+                </a>
+
+                <a href="{{ url_for('faculty_login') }}">
+                    <i class="fa-solid fa-user-tie" aria-hidden="true"></i>
+                    Faculty Login
+                </a>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+{% endblock %}
