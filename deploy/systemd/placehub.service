@@ -1,0 +1,17 @@
+[Unit]
+Description=PLACEHUB Flask application
+After=network.target
+
+[Service]
+Type=simple
+User=placehub
+Group=www-data
+WorkingDirectory=/opt/placehub/app
+EnvironmentFile=/etc/placehub/placehub.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/placehub/venv/bin/gunicorn --workers 2 --bind 127.0.0.1:8000 --access-logfile - --error-logfile - wsgi:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
