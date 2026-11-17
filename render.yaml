@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: placehub
+    runtime: python
+    plan: free
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: python render_init.py && gunicorn app:app --workers 1 --threads 4 --timeout 120
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_PATH
+        value: database/database.db
+      - key: PLACEHUB_SUPER_ADMIN_USERNAME
+        sync: false
+      - key: PLACEHUB_SUPER_ADMIN_NAME
+        sync: false
+      - key: PLACEHUB_SUPER_ADMIN_EMAIL
+        sync: false
+      - key: PLACEHUB_SUPER_ADMIN_PASSWORD
+        sync: false

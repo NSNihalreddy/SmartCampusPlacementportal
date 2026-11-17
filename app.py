@@ -1,5 +1,11 @@
 from email.mime import application
 import os
+
+# Load environment variables before importing database.py, because that
+# module reads DATABASE_PATH when it is first imported.
+from dotenv import load_dotenv
+load_dotenv()
+
 import sqlite3
 import uuid
 import re
@@ -14,11 +20,6 @@ from ADMIN import admin_bp
 import ADMIN.routes
 from pypdf import PdfReader
 from sklearn.metrics.pairwise import cosine_similarity
-from dotenv import load_dotenv
-
-# Load local environment variables from the project-root .env file.
-# Render will provide the same variables through its Environment settings.
-load_dotenv()
 
 # Load the transformer model only when semantic matching is requested.
 # This prevents a PyTorch/Windows DLL restriction from stopping Flask startup.

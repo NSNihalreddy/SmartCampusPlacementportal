@@ -17,7 +17,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Local databases and backups
+# Local databases and SQLite files
 database/*.db
 database/*.db-*
 database/*.sqlite
@@ -25,9 +25,19 @@ database/*.sqlite3
 *.sqlite-wal
 *.sqlite-shm
 
-# User uploads
+# User uploads and private files
 static/uploads/
 uploads/
+
+# Local backups
+PLACEHUB_BACKUP*/
+*_backup/
+*_backup*/
+*.bak
+
+# Generated local data
+storage/
+output/
 
 # Logs and temporary files
 *.log
