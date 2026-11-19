@@ -10,16 +10,25 @@ import sqlite3
 import uuid
 import re
 import json
+import mimetypes
+from io import BytesIO
 from datetime import datetime, timezone, timedelta
 from openpyxl import load_workbook
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_file
 from database import get_connection
 from ADMIN import admin_bp
 import ADMIN.routes
 from pypdf import PdfReader
 from sklearn.metrics.pairwise import cosine_similarity
+from placehub_storage import (
+    save_upload,
+    download_to_path,
+    create_temporary_copy,
+    delete_upload,
+    is_cloud_storage_enabled,
+)
 
 # Load the transformer model only when semantic matching is requested.
 # This prevents a PyTorch/Windows DLL restriction from stopping Flask startup.
@@ -431,6 +440,29 @@ def extract_resume_text(pdf_path):
             text += page_text + "\n"
 
     return text
+
+
+def extract_resume_text_from_storage(upload_key):
+    """Extract PDF text from local or private cloud upload storage."""
+    if not upload_key:
+        return ""
+
+    if not is_cloud_storage_enabled():
+        local_path = os.path.join(app.static_folder, upload_key)
+        if not os.path.isfile(local_path):
+            return ""
+        return extract_resume_text(local_path)
+
+    temporary_path = create_temporary_copy(upload_key, suffix=".pdf")
+    try:
+        return extract_resume_text(temporary_path)
+    finally:
+        try:
+            os.unlink(temporary_path)
+        except OSError:
+            app.logger.warning("Could not remove temporary resume copy: %s", temporary_path)
+
+
 def calculate_ats_score(resume_text):
 
     text = resume_text.lower()
@@ -1800,17 +1832,9 @@ def company_details(company_id):
 
     if student["resume_path"]:
 
-        resume_path = os.path.join(
-            app.static_folder,
-            student["resume_path"]
-        )
+        resume_text = extract_resume_text_from_storage(student["resume_path"])
 
-        if os.path.exists(resume_path):
-
-            resume_text = extract_resume_text(
-                resume_path
-            )
-
+        if resume_text:
             resume_score = calculate_resume_match_score(
                 resume_text,
                 company
@@ -2021,17 +2045,9 @@ def apply_company(company_id):
 
     if student["resume_path"]:
 
-        resume_path = os.path.join(
-            app.static_folder,
-            student["resume_path"]
-        )
+        resume_text = extract_resume_text_from_storage(student["resume_path"])
 
-        if os.path.exists(resume_path):
-
-            resume_text = extract_resume_text(
-                resume_path
-            )
-
+        if resume_text:
             resume_score = calculate_resume_match_score(
                 resume_text,
                 company
@@ -2244,6 +2260,65 @@ def job_opportunities():
         "job_opportunities.html",
         companies=companies
     )
+@app.route("/student/uploads/<path:upload_key>")
+def student_upload_file(upload_key):
+    """Serve only the signed-in student's currently assigned uploaded files."""
+    student_id = session.get("student_id")
+    if not student_id:
+        return redirect(url_for("student_login"))
+
+    connection = get_connection()
+    try:
+        student = connection.execute(
+            "SELECT profile_picture, resume_path FROM students WHERE id = ?",
+            (student_id,)
+        ).fetchone()
+    finally:
+        connection.close()
+
+    if student is None:
+        return "Student not found", 404
+
+    # The key must exactly match one of this student's current DB references.
+    allowed_keys = {
+        student["profile_picture"],
+        student["resume_path"],
+    }
+    if upload_key not in allowed_keys or not upload_key:
+        return "File not found", 404
+
+    try:
+        temporary_path = create_temporary_copy(
+            upload_key,
+            suffix=os.path.splitext(upload_key)[1]
+        )
+        try:
+            with open(temporary_path, "rb") as uploaded_file:
+                file_bytes = uploaded_file.read()
+        finally:
+            try:
+                os.unlink(temporary_path)
+            except OSError:
+                app.logger.warning(
+                    "Could not remove temporary served upload: %s",
+                    temporary_path
+                )
+    except FileNotFoundError:
+        return "File not found", 404
+    except Exception:
+        app.logger.exception("Could not read student upload: %s", upload_key)
+        return "File could not be retrieved", 500
+
+    mimetype = mimetypes.guess_type(upload_key)[0] or "application/octet-stream"
+    return send_file(
+        BytesIO(file_bytes),
+        mimetype=mimetype,
+        as_attachment=False,
+        download_name=os.path.basename(upload_key),
+        max_age=0
+    )
+
+
 @app.route("/student/profile", methods=["GET", "POST"])
 def student_profile():
 
@@ -2319,31 +2394,21 @@ def student_profile():
                 )
 
 
-                upload_folder = os.path.join(
-                    app.static_folder,
-                    "uploads",
-                    "profile_pictures"
-                )
-
-
-                os.makedirs(
-                    upload_folder,
-                    exist_ok=True
-                )
-
-
-                file_path = os.path.join(
-                    upload_folder,
-                    unique_filename
-                )
-
-
-                file.save(file_path)
-
-
                 profile_path = (
                     f"uploads/profile_pictures/{unique_filename}"
                 )
+
+                try:
+                    save_upload(
+                        file,
+                        profile_path,
+                        content_type=mimetypes.guess_type(unique_filename)[0]
+                    )
+                except Exception:
+                    app.logger.exception("Profile picture upload failed")
+                    connection.close()
+                    flash("Profile picture could not be uploaded. Please try again.", "error")
+                    return redirect(url_for("student_profile"))
 
 
                 cursor.execute("""
@@ -2501,22 +2566,8 @@ def student_resume():
         )
 
 
-        upload_folder = os.path.join(
-            app.static_folder,
-            "uploads",
-            "resumes"
-        )
-
-
-        os.makedirs(
-            upload_folder,
-            exist_ok=True
-        )
-
-
-        file_path = os.path.join(
-            upload_folder,
-            unique_filename
+        resume_path = (
+            f"uploads/resumes/{unique_filename}"
         )
 
 
@@ -2531,16 +2582,38 @@ def student_resume():
         # SAVE NEW RESUME
         # ==========================================
 
-        file.save(file_path)
+        try:
+            save_upload(
+                file,
+                resume_path,
+                content_type="application/pdf"
+            )
 
+            # Parse the saved object through a temporary local copy.
+            temporary_resume_path = create_temporary_copy(
+                resume_path,
+                suffix=".pdf"
+            )
+            try:
+                extracted_text = extract_resume_text(temporary_resume_path)
+            finally:
+                try:
+                    os.unlink(temporary_resume_path)
+                except OSError:
+                    app.logger.warning(
+                        "Could not remove temporary resume copy: %s",
+                        temporary_resume_path
+                    )
 
-        # ==========================================
-        # EXTRACT TEXT
-        # ==========================================
-
-        extracted_text = extract_resume_text(
-            file_path
-        )
+        except Exception:
+            app.logger.exception("Resume upload or PDF extraction failed")
+            try:
+                delete_upload(resume_path)
+            except Exception:
+                app.logger.exception("Could not clean up failed resume upload")
+            connection.close()
+            flash("Resume could not be processed. Please try again.", "error")
+            return redirect(url_for("student_resume"))
 
 
         # ==========================================
@@ -2549,15 +2622,6 @@ def student_resume():
 
         ats_score, ats_breakdown = calculate_ats_score(
             extracted_text
-        )
-
-
-        # ==========================================
-        # DATABASE PATH
-        # ==========================================
-
-        resume_path = (
-            f"uploads/resumes/{unique_filename}"
         )
 
 
@@ -2585,17 +2649,12 @@ def student_resume():
         # ==========================================
 
         if old_resume:
-
-            old_file_path = os.path.join(
-                app.static_folder,
-                old_resume
-            )
-
-
-            if os.path.exists(old_file_path):
-
-                os.remove(old_file_path)
-
+            try:
+                delete_upload(old_resume)
+            except Exception:
+                # The database now points to the new resume. Keep the old
+                # object if cleanup fails; do not undo a successful upload.
+                app.logger.exception("Could not delete replaced resume: %s", old_resume)
 
             flash(
                 "Resume replaced successfully.",
@@ -2794,15 +2853,10 @@ def test_resume():
     if not student or not student["resume_path"]:
         return "<h2>No resume uploaded.</h2>"
 
-    pdf_path = os.path.join(
-        app.static_folder,
-        student["resume_path"]
-    )
+    extracted_text = extract_resume_text_from_storage(student["resume_path"])
 
-    if not os.path.exists(pdf_path):
-        return "<h2>Resume file not found.</h2>"
-
-    extracted_text = extract_resume_text(pdf_path)
+    if not extracted_text:
+        return "<h2>Resume file not found or contains no extractable text.</h2>"
 
     return f"""
     <html>
@@ -2863,12 +2917,10 @@ def test_ats():
     if not student or not student["resume_path"]:
         return "No resume uploaded."
 
-    pdf_path = os.path.join(
-        app.static_folder,
-        student["resume_path"]
-    )
+    resume_text = extract_resume_text_from_storage(student["resume_path"])
 
-    resume_text = extract_resume_text(pdf_path)
+    if not resume_text:
+        return "Resume file not found or contains no extractable text.", 404
 
     ats_score, breakdown = calculate_ats_score(resume_text)
 

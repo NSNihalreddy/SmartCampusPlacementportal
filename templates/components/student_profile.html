@@ -177,10 +177,7 @@
 
                         <img
                             id="profilePreview"
-                            src="{{ url_for(
-                                'static',
-                                filename=student['profile_picture']
-                            ) }}"
+                            src="{{ url_for('student_upload_file', upload_key=student['profile_picture']) }}"
                             alt="Profile Picture"
                         >
 

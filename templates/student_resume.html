@@ -160,7 +160,7 @@
                     </p>
 
                     <!-- View Resume -->
-                    <a href="{{ url_for('static', filename=student['resume_path']) }}"
+                    <a href="{{ url_for('student_upload_file', upload_key=student['resume_path']) }}"
                        target="_blank"
                        rel="noopener noreferrer"
                        class="resume-view-btn">

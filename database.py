@@ -1,18 +1,237 @@
+"""
+PLACEHUB database connection layer.
+
+Local development:
+    Uses the existing SQLite file at DATABASE_PATH (default:
+    database/database.db).
+
+Render/Turso:
+    Set DATABASE_BACKEND=turso, TURSO_DATABASE_URL, and TURSO_AUTH_TOKEN.
+
+The public get_connection() interface is intentionally unchanged.
+"""
+
 import os
 import sqlite3
 
-# Local development keeps using database/database.db.
-# Render can override this with DATABASE_PATH=/var/data/database.db
+DATABASE_BACKEND = os.getenv("DATABASE_BACKEND", "sqlite").strip().lower()
 DATABASE = os.getenv("DATABASE_PATH", "database/database.db")
 
-# Ensure the database directory exists for both local and deployed paths.
-os.makedirs(os.path.dirname(os.path.abspath(DATABASE)), exist_ok=True)
+
+def _raise_sqlite_compatible_error(exc):
+    """Translate Turso DB-API failures into sqlite3.Error for existing handlers."""
+    if isinstance(exc, sqlite3.Error):
+        raise exc
+    raise sqlite3.DatabaseError(str(exc)) from exc
+
+if DATABASE_BACKEND == "sqlite":
+    os.makedirs(os.path.dirname(os.path.abspath(DATABASE)), exist_ok=True)
+
+
+class CompatibleRow:
+    """Supports both sqlite3.Row-style name and positional indexing."""
+
+    __slots__ = ("_values", "_names", "_mapping")
+
+    def __init__(self, names, values):
+        self._names = tuple(names or ())
+        self._values = tuple(values or ())
+        self._mapping = dict(zip(self._names, self._values))
+
+    def __getitem__(self, key):
+        return self._mapping[key] if isinstance(key, str) else self._values[key]
+
+    def __iter__(self):
+        return iter(self._values)
+
+    def __len__(self):
+        return len(self._values)
+
+    def keys(self):
+        return list(self._names)
+
+    def values(self):
+        return list(self._values)
+
+    def items(self):
+        return list(zip(self._names, self._values))
+
+    def get(self, key, default=None):
+        return self._mapping.get(key, default)
+
+    def __repr__(self):
+        return repr(self._mapping)
+
+
+class TursoCursor:
+    """Cursor adapter that refreshes metadata after every statement."""
+
+    def __init__(self, cursor):
+        self._cursor = cursor
+        self.lastrowid = getattr(cursor, "lastrowid", None)
+        self.rowcount = getattr(cursor, "rowcount", -1)
+        self.description = getattr(cursor, "description", None)
+
+    def _refresh_metadata(self):
+        self.lastrowid = getattr(self._cursor, "lastrowid", None)
+        self.rowcount = getattr(self._cursor, "rowcount", -1)
+        self.description = getattr(self._cursor, "description", None)
+
+    def execute(self, sql, parameters=()):
+        try:
+            self._cursor.execute(sql, parameters)
+            self._refresh_metadata()
+            return self
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    def executemany(self, sql, seq_of_parameters):
+        try:
+            self._cursor.executemany(sql, seq_of_parameters)
+            self._refresh_metadata()
+            return self
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    def executescript(self, sql_script):
+        try:
+            self._cursor.executescript(sql_script)
+            self._refresh_metadata()
+            return self
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    def _convert(self, row):
+        if row is None:
+            return None
+        description = self.description or getattr(self._cursor, "description", None)
+        names = [column[0] for column in description] if description else []
+        if isinstance(row, CompatibleRow):
+            return row
+        if hasattr(row, "keys") and not isinstance(row, (tuple, list)):
+            names = list(row.keys())
+            values = [row[name] for name in names]
+        else:
+            values = row
+        return CompatibleRow(names, values)
+
+    def fetchone(self):
+        try:
+            return self._convert(self._cursor.fetchone())
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    def fetchall(self):
+        try:
+            return [self._convert(row) for row in self._cursor.fetchall()]
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    def fetchmany(self, size=None):
+        try:
+            rows = self._cursor.fetchmany() if size is None else self._cursor.fetchmany(size)
+            return [self._convert(row) for row in rows]
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    def __iter__(self):
+        for row in self._cursor:
+            yield self._convert(row)
+
+    def close(self):
+        return self._cursor.close()
+
+    def __getattr__(self, name):
+        return getattr(self._cursor, name)
+
+
+class TursoConnection:
+    """Connection adapter exposing the subset of sqlite3 used by PLACEHUB."""
+
+    def __init__(self, connection):
+        self._connection = connection
+
+    def execute(self, sql, parameters=()):
+        try:
+            cursor = self._connection.execute(sql, parameters)
+            return TursoCursor(cursor)
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    def executemany(self, sql, seq_of_parameters):
+        try:
+            cursor = self._connection.executemany(sql, seq_of_parameters)
+            return TursoCursor(cursor)
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    def executescript(self, sql_script):
+        try:
+            cursor = self._connection.executescript(sql_script)
+            return TursoCursor(cursor)
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    def cursor(self):
+        try:
+            return TursoCursor(self._connection.cursor())
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    def commit(self):
+        try:
+            return self._connection.commit()
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    def rollback(self):
+        try:
+            return self._connection.rollback()
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    def close(self):
+        try:
+            return self._connection.close()
+        except Exception as exc:
+            _raise_sqlite_compatible_error(exc)
+
+    @property
+    def in_transaction(self):
+        return getattr(self._connection, "in_transaction", False)
+
+    def __getattr__(self, name):
+        return getattr(self._connection, name)
 
 
 def get_connection():
-    connection = sqlite3.connect(DATABASE)
-    connection.row_factory = sqlite3.Row
-    return connection
+    """Return a SQLite or Turso connection with PLACEHUB-compatible rows."""
+    if DATABASE_BACKEND == "sqlite":
+        connection = sqlite3.connect(DATABASE)
+        connection.row_factory = sqlite3.Row
+        return connection
+
+    if DATABASE_BACKEND == "turso":
+        database_url = os.getenv("TURSO_DATABASE_URL")
+        auth_token = os.getenv("TURSO_AUTH_TOKEN")
+        if not database_url or not auth_token:
+            raise RuntimeError(
+                "Turso is selected but TURSO_DATABASE_URL or TURSO_AUTH_TOKEN is missing."
+            )
+        try:
+            import turso_serverless
+        except ImportError as exc:
+            raise RuntimeError(
+                "Turso backend requires turso_serverless. Install it with "
+                "'pip install turso_serverless'."
+            ) from exc
+        return TursoConnection(
+            turso_serverless.connect(database_url, auth_token=auth_token)
+        )
+
+    raise RuntimeError(
+        f"Unsupported DATABASE_BACKEND={DATABASE_BACKEND!r}. Use 'sqlite' or 'turso'."
+    )
 
 
 def create_tables():

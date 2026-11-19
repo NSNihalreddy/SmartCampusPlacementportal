@@ -11,8 +11,24 @@ services:
         value: 3.11.11
       - key: SECRET_KEY
         generateValue: true
-      - key: DATABASE_PATH
-        value: database/database.db
+      - key: DATABASE_BACKEND
+        value: turso
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false
+      - key: PLACEHUB_STORAGE
+        value: b2
+      - key: B2_ENDPOINT_URL
+        value: https://s3.us-east-005.backblazeb2.com
+      - key: B2_REGION
+        value: us-east-005
+      - key: B2_BUCKET_NAME
+        value: placehub-uploads
+      - key: B2_APPLICATION_KEY_ID
+        sync: false
+      - key: B2_APPLICATION_KEY
+        sync: false
       - key: PLACEHUB_SUPER_ADMIN_USERNAME
         sync: false
       - key: PLACEHUB_SUPER_ADMIN_NAME
